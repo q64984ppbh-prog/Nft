@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .top-balance {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+        }
+        
+        .balance-item {
+            background: #007AFF;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .add-button {
+            background: #007AFF;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 25px;
+            padding: 5px;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .slot {
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slot:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: 10%;
+            height: 80%;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+        
+        .slot-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slot-reel {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .slot img {
+            width: 100%;
+            height: 110px;
+            object-fit: contain;
+            padding: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .spin-button {
+            background: #007AFF;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 20px 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
+        }
+        
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 122, 255, 0.5);
+            background: #0088FF;
+        }
+        
+        .spin-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .spin-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .win-message {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 25px 0;
+            height: 40px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .win {
+            color: #4CD964;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        .lose {
+            color: #FF3B30;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(76, 217, 100, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(76, 217, 100, 0.8), 0 0 30px rgba(76, 217, 100, 0.6);
+            }
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 18px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        
+        .nav-button:not(:last-child)::after {
+            content: '|';
+            position: absolute;
+            right: -12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .nav-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        .profile-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 40px 30px;
+            border-radius: 30px;
+            width: 100%;
+            max-width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-header {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 35px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-balance-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.5px;
+        }
+        
+        .profile-balance {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 35px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .deposit-button {
+            background: linear-gradient(45deg, #007AFF, #0056CC);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+        }
+        
+        .deposit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 122, 255, 0.5);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #2d2d2d;
+            padding: 40px 30px;
+            border-radius: 25px;
+            text-align: center;
+            position: relative;
+            max-width: 320px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .bonus-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 40px 30px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 350px;
+        }
+        
+        .bonus-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .bonus-streak {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .bonus-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .bonus-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CD964;
+            margin-bottom: 15px;
+        }
+        
+        .bonus-amount {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="top-balance">
+        <div class="add-button">+</div>
+        <div class="balance-item">0 ⭐️</div>
+        <div class="balance-item">0 💎</div>
+    </div>
+
+    <div class="container">
+        <div class="screen active" id="slotsScreen">
+            <div class="slots-container">
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel1"></div>
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel2"></div>
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="win-message" id="winMessage"></div>
+            
+            <button class="spin-button" id="spinButton">Крутить бесплатно</button>
+        </div>
+        
+        <div class="screen" id="freeScreen">
+            <div class="bonus-container">
+                <div class="bonus-title">Заходи каждый день - получай алмазы на счет!</div>
+                <div class="bonus-streak" id="bonusStreak">Ваша серия: 1 день</div>
+                <button class="bonus-button" id="bonusButton">Забрать бонус • 100</button>
+                <div class="bonus-timer" id="bonusTimer" style="display: none;">23:59:59</div>
+                <div class="bonus-amount">День 1: 100 алмазов • День 2: 200 • День 3: 300 • День 4: 400 • День 5: 500</div>
+            </div>
+        </div>
+        
+        <div class="screen" id="profileScreen">
+            <div class="profile-container">
+                <div class="profile-header">Профиль</div>
+                <div class="profile-avatar" id="userAvatar">
+                    <img src="" alt="Avatar" id="avatarImage" style="display: none;">
+                    <span id="avatarPlaceholder">👤</span>
+                </div>
+                <div class="profile-name" id="userName">azotherm</div>
+                <div class="profile-balance-label">Баланс Stars</div>
+                <div class="profile-balance" id="userBalance">0.62</div>
+                <button class="deposit-button" id="depositButton">Пополнить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-buttons">
+        <button class="nav-button active" data-screen="slotsScreen">Слоты</button>
+        <button class="nav-button" data-screen="freeScreen">Бесплатно</button>
+        <button class="nav-button" data-screen="profileScreen">Профиль</button>
+    </div>
+    
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <div class="close-modal" id="closeModal">❌</div>
+            <p>Я еще не реализовал,куда спешишь</p>
+        </div>
+    </div>
+
+    <script>
+        const gifs = [
+            '093.gif', '108.gif', '034.gif', '030.gif', '060.gif',
+            '120.gif', '130.gif', '124.gif', '138.gif', '033.gif'
+        ];
+        
+        const gifMultipliers = {
+            '093.gif': 500, '108.gif': 350, '034.gif': 250, '030.gif': 180, '060.gif': 130,
+            '120.gif': 90, '130.gif': 70, '124.gif': 50, '138.gif': 35, '033.gif': 15
+        };
+        
+        const gifProbabilities = {
+            '093.gif': 0.05, '108.gif': 0.15, '034.gif': 0.3, '030.gif': 0.6, '060.gif': 0.9,
+            '120.gif': 1.1, '130.gif': 1.35, '124.gif': 1.5, '138.gif': 1.8, '033.gif': 2.5
+        };
+        
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const spinButton = document.getElementById('spinButton');
+        const winMessage = document.getElementById('winMessage');
+        const navButtons = document.querySelectorAll('.nav-button');
+        const screens = document.querySelectorAll('.screen');
+        const depositButton = document.getElementById('depositButton');
+        const depositModal = document.getElementById('depositModal');
+        const closeModal = document.getElementById('closeModal');
+        const addButtons = document.querySelectorAll('.add-button');
+        const bonusButton = document.getElementById('bonusButton');
+        const bonusTimer = document.getElementById('bonusTimer');
+        const bonusStreak = document.getElementById('bonusStreak');
+        
+        let currentDay = 1;
+        let canClaimBonus = true;
+        let timerInterval;
+        
+        const bonusAmounts = [100, 200, 300, 400, 500];
+        
+        function initializeReels() {
+            reel1.innerHTML = '';
+            reel2.innerHTML = '';
+            reel3.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                gifs.forEach(gif => {
+                    const img1 = document.createElement('img');
+                    img1.src = `gifs/${gif}`;
+                    img1.alt = `Slot ${gif}`;
+                    reel1.appendChild(img1);
+                    
+                    const img2 = document.createElement('img');
+                    img2.src = `gifs/${gif}`;
+                    img2.alt = `Slot ${gif}`;
+                    reel2.appendChild(img2);
+                    
+                    const img3 = document.createElement('img');
+                    img3.src = `gifs/${gif}`;
+                    img3.alt = `Slot ${gif}`;
+                    reel3.appendChild(img3);
+                });
+            }
+        }
+        
+        function resetReels() {
+            reel1.style.transition = 'none';
+            reel2.style.transition = 'none';
+            reel3.style.transition = 'none';
+            reel1.style.transform = 'translateY(0px)';
+            reel2.style.transform = 'translateY(0px)';
+            reel3.style.transform = 'translateY(0px)';
+        }
+        
+        function getRandomGif() {
+            const random = Math.random() * 100;
+            let cumulative = 0;
+            
+            for (const gif of gifs) {
+                cumulative += gifProbabilities[gif];
+                if (random <= cumulative) {
+                    return gif;
+                }
+            }
+            return gifs[gifs.length - 1];
+        }
+        
+        function determineSpinResult() {
+            const random = Math.random() * 100;
+            
+            if (random < 10.25) {
+                const gif = getRandomGif();
+                return [gif, gif, gif];
+            } else {
+                return [getRandomGif(), getRandomGif(), getRandomGif()];
+            }
+        }
+        
+        function spinSlots() {
+            winMessage.textContent = '';
+            winMessage.className = 'win-message';
+            
+            spinButton.disabled = true;
+            spinButton.textContent = 'Вращение...';
+            
+            resetReels();
+            
+            setTimeout(() => {
+                const result = determineSpinResult();
+                
+                const positions = result.map(gif => {
+                    const index = gifs.indexOf(gif);
+                    return -(index * 110);
+                });
+                
+                const extraSpin = -110 * gifs.length * 6;
+                
+                setTimeout(() => {
+                    reel1.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    reel2.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    reel3.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    
+                    reel1.style.transform = `translateY(${positions[0] + extraSpin}px)`;
+                    reel2.style.transform = `translateY(${positions[1] + extraSpin}px)`;
+                    reel3.style.transform = `translateY(${positions[2] + extraSpin}px)`;
+                }, 100);
+                
+                setTimeout(() => {
+                    reel1.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    reel2.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    reel3.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    
+                    reel1.style.transform = `translateY(${positions[0]}px)`;
+                    reel2.style.transform = `translateY(${positions[1]}px)`;
+                    reel3.style.transform = `translateY(${positions[2]}px)`;
+                }, 2100);
+                
+                setTimeout(() => {
+                    checkWin(result[0], result[1], result[2]);
+                    
+                    spinButton.disabled = false;
+                    spinButton.textContent = 'Крутить бесплатно';
+                }, 2700);
+            }, 50);
+        }
+        
+        function checkWin(gif1, gif2, gif3) {
+            if (gif1 === gif2 && gif2 === gif3) {
+                const multiplier = gifMultipliers[gif1];
+                winMessage.textContent = `Победа! x${multiplier}`;
+                winMessage.classList.add('win');
+            } else {
+                winMessage.textContent = 'Попробуйте еще раз!';
+                winMessage.classList.add('lose');
+            }
+        }
+        
+        function startTimer() {
+            let timeLeft = 24 * 60 * 60;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    canClaimBonus = true;
+                    bonusButton.style.display = 'block';
+                    bonusTimer.style.display = 'none';
+                    return;
+                }
+                
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+                
+                bonusTimer.textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        function claimBonus() {
+            if (!canClaimBonus) return;
+            
+            canClaimBonus = false;
+            bonusButton.style.display = 'none';
+            bonusTimer.style.display = 'block';
+            
+            const amount = bonusAmounts[currentDay - 1];
+            alert(`Вы получили ${amount} алмазов!`);
+            
+            if (currentDay === 5) {
+                currentDay = 1;
+            } else {
+                currentDay++;
+            }
+            
+            bonusStreak.textContent = `Ваша серия: ${currentDay} день`;
+            bonusButton.textContent = `Забрать бонус • ${bonusAmounts[currentDay - 1]}`;
+            
+            startTimer();
+        }
+        
+        function switchScreen(screenId) {
+            screens.forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            navButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-screen="${screenId}"]`).classList.add('active');
+        }
+        
+        window.addEventListener('load', () => {
+            initializeReels();
+            spinButton.addEventListener('click', spinSlots);
+            
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchScreen(button.dataset.screen);
+                });
+            });
+            
+            depositButton.addEventListener('click', () => {
+                depositModal.style.display = 'flex';
+            });
+            
+            closeModal.addEventListener('click', () => {
+                depositModal.style.display = 'none';
+            });
+            
+            depositModal.addEventListener('click', (e) => {
+                if (e.target === depositModal) {
+                    depositModal.style.display = 'none';
+                }
+            });
+            
+            addButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    depositModal.style.display = 'flex';
+                });
+            });
+            
+            bonusButton.addEventListener('click', claimBonus);
+        });
+    </script>
+</body>
+</html>
