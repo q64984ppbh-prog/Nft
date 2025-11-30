@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFT Roulette</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #6a0dad;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    h1 {
+      margin: 20px 0;
+      font-size: 2.5em;
+    }
+    
+    #roulette-container {
+      width: 100%;
+      max-width: 1900px;
+      margin: 50px auto;
+      overflow: hidden;
+      background: transparent;
+      height: 300px;
+      position: relative;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+    }
+    
+    #roulette {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      will-change: transform;
+    }
+    
+    .item {
+      min-width: 300px;
+      margin: 0 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    
+    .item img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 15px;
+      background: #fff;
+      border: 3px solid gold;
+    }
+    
+    button {
+      margin-top: 20px;
+      padding: 15px 50px;
+      font-size: 20px;
+      background: gold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #ffd700;
+      transform: scale(1.05);
+    }
+    
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 100;
+    }
+    
+    #overlay img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 5px solid gold;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    
+    #overlay h2 {
+      font-size: 2.5em;
+      color: gold;
+      margin-bottom: 20px;
+    }
+    
+    #timer {
+      font-size: 1.5em;
+      color: gold;
+      margin: 20px 0;
+      display: none;
+    }
+    
+    #pointer {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 25px solid red;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="debug" id="debugInfo"></div>
+
+<h1>🎰 NFT Roulette 🎁</h1>
+
+<div id="roulette-container">
+  <div id="roulette">
+    <!-- Заменим изображения на надежные URL -->
+    <div class="item"><img src="https://picsum.photos/250/250?random=1" alt="NFT 1"></div>
+    <div class="item"><img src="https://picsum.photos/250/250?random=2" alt="NFT 2"></div>
+    <div class="item"><img src="https://picsum.photos/250/250?random=3" alt="NFT 3"></div>
+    <div class="item"><img src="https://picsum.photos/250/250?random=4" alt="NFT 4"></div>
+    <div class="item"><img src="https://picsum.photos/250/250?random=5" alt="NFT 5"></div>
+    <div class="item"><img src="https://picsum.photos/250/250?random=6" alt="NFT 6"></div>
+  </div>
+  <div id="pointer"></div>
+</div>
+
+<button id="spinButton">Spin!</button>
+<p id="timer">Next spin in: 10 seconds</p>
+
+<div id="overlay">
+  <img id="prize-img" src="" alt="Prize">
+  <h2>You Won!</h2>
+  <button>Close</button>
+</div>
+
+<script>
+  // Debug info
+  const debugInfo = document.getElementById('debugInfo');
+  debugInfo.textContent = 'Script loaded';
+  
+  // Elements
+  const roulette = document.getElementById('roulette');
+  const overlay = document.getElementById('overlay');
+  const prizeImg = document.getElementById('prize-img');
+  const spinButton = document.getElementById('spinButton');
+  const timerElement = document.getElementById('timer');
+  const closeButton = overlay.querySelector('button');
+
+  // State
+  let position = 0;
+  let speed = 30;
+  let spinning = false;
+  let animationFrame;
+  let timer;
+
+  // Check if elements exist
+  if (!roulette) debugInfo.textContent += ' | No roulette';
+  if (!spinButton) debugInfo.textContent += ' | No button';
+
+  // Add more items for longer roulette
+  function initializeRoulette() {
+    const items = [
+      'https://picsum.photos/250/250?random=1',
+      'https://picsum.photos/250/250?random=2', 
+      'https://picsum.photos/250/250?random=3',
+      'https://picsum.photos/250/250?random=4',
+      'https://picsum.photos/250/250?random=5',
+      'https://picsum.photos/250/250?random=6',
+      'https://picsum.photos/250/250?random=7',
+      'https://picsum.photos/250/250?random=8',
+      'https://picsum.photos/250/250?random=9',
+      'https://picsum.photos/250/250?random=10'
+    ];
+
+    roulette.innerHTML = '';
+    items.forEach((src, index) => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `<img src="${src}" alt="NFT ${index + 1}">`;
+      roulette.appendChild(item);
+    });
+    
+    debugInfo.textContent += ' | Roulette initialized';
+  }
+
+  // Event listeners
+  spinButton.addEventListener('click', startRoulette);
+  closeButton.addEventListener('click', closeOverlay);
+
+  function startRoulette() {
+    if (spinning) return;
+    
+    debugInfo.textContent = 'Spinning started';
+    spinning = true;
+    position = 0;
+    speed = 30;
+
+    // Clear previous timer
+    clearInterval(timer);
+    timerElement.style.display = 'none';
+    spinButton.disabled = true;
+
+    function spin() {
+      position -= speed;
+      if (position <= -roulette.scrollWidth / 2) {
+        position = 0;
+      }
+      roulette.style.transform = `translateX(${position}px)`;
+      animationFrame = requestAnimationFrame(spin);
+    }
+
+    spin();
+
+    setTimeout(() => {
+      gradualStop();
+    }, 3000);
+  }
+
+  function gradualStop() {
+    cancelAnimationFrame(animationFrame);
+    const deceleration = speed / 100;
+    
+    function slowSpin() {
+      position -= speed;
+      if (position <= -roulette.scrollWidth / 2) {
+        position = 0;
+      }
+      roulette.style.transform = `translateX(${position}px)`;
+
+      speed -= deceleration;
+      if (speed > 0.5) {
+        requestAnimationFrame(slowSpin);
+      } else {
+        spinning = false;
+        showPrize();
+      }
+    }
+    
+    slowSpin();
+  }
+
+  function showPrize() {
+    debugInfo.textContent = 'Showing prize';
+    
+    const items = document.querySelectorAll('.item img');
+    const center = window.innerWidth / 2;
+    let minDiff = Infinity;
+    let winnerSrc = '';
+
+    items.forEach(img => {
+      const rect = img.getBoundingClientRect();
+      const imgCenter = rect.left + rect.width / 2;
+      const diff = Math.abs(center - imgCenter);
+      if (diff < minDiff) {
+        minDiff = diff;
+        winnerSrc = img.src;
+      }
+    });
+
+    prizeImg.src = winnerSrc;
+    overlay.style.display = 'flex';
+
+    // Timer countdown
+    let secondsLeft = 10;
+    timerElement.style.display = 'block';
+    
+    timer = setInterval(() => {
+      timerElement.textContent = `Next spin in: ${secondsLeft} seconds`;
+      secondsLeft--;
+      
+      if (secondsLeft < 0) {
+        clearInterval(timer);
+        timerElement.textContent = 'Ready for next spin!';
+        spinButton.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function closeOverlay() {
+    overlay.style.display = 'none';
+  }
+
+  // Initialize when page loads
+  window.addEventListener('load', function() {
+    debugInfo.textContent = 'Page loaded completely';
+    initializeRoulette();
+  });
+
+  // Fallback initialization
+  setTimeout(() => {
+    if (roulette.children.length === 0) {
+      initializeRoulette();
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>
