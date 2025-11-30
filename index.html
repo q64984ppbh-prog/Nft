@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1. 0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Crypto Casino</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            overflow: hidden;
+        }
+
+        . container {
+            width: 100%;
+            height: 100vh;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #252525;
+            border-bottom: 1px solid #333;
+            gap: 12px;
+        }
+
+        . balance-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .balance {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1a1a1a;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .topup-btn {
+            background: #5a5a5a;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 70px;
+        }
+
+        . page.active {
+            display: flex;
+        }
+
+        . welcome-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-sticker {
+            font-size: 100px;
+            animation: shake 0.5s infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .games-page {
+            padding: 16px;
+        }
+
+        . games-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            border: 1px solid #404040;
+            transition: transform 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-card:active {
+            transform: scale(0.98);
+        }
+
+        .game-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        . game-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .slots-page {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slots-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 30px 0;
+            align-items: center;
+        }
+
+        .slot {
+            width: 70px;
+            height: 70px;
+            background: #252525;
+            border: 2px solid #5a5a5a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .slot. spinning {
+            animation: spin-slot 0.3s ease-in-out;
+        }
+
+        @keyframes spin-slot {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        . slot-arrow {
+            font-size: 24px;
+            color: #5a5a5a;
+        }
+
+        .slot-cost {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        . slot-result {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4a7c4e;
+            margin-top: 16px;
+            min-height: 24px;
+        }
+
+        . free-page {
+            padding: 16px;
+        }
+
+        .task-section {
+            margin-bottom: 20px;
+        }
+
+        . section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .daily-bonus-btn {
+            width: 100%;
+            background: #5a5a5a;
+            border: 1px solid #404040;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        . task-item {
+            background: #252525;
+            border: 1px solid #404040;
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        . task-reward {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .task-action-btn {
+            background: #5a5a5a;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .task-action-btn:active {
+            background: #474747;
+        }
+
+        . profile-page {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #5a5a5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        . profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        . profile-username {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 24px;
+        }
+
+        . profile-balances {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .profile-balance-card {
+            background: #252525;
+            border: 1px solid #404040;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .profile-menu {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        . profile-menu-btn {
+            width: 100%;
+            background: #252525;
+            border: 1px solid #404040;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-menu-btn:active {
+            background: #2a2a2a;
+        }
+
+        .nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            background: #0f0f0f;
+            border-top: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-around;
+            gap: 0;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #808080;
+            font-size: 10px;
+            font-weight: 600;
+            border: none;
+            background: none;
+        }
+
+        .nav-item. active {
+            color: #5a5a5a;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .modal. active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #252525;
+            width: 100%;
+            max-height: 80%;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        . modal-btn {
+            background: #5a5a5a;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .modal-btn:active {
+            background: #474747;
+        }
+
+        .modal-close {
+            width: 100%;
+            background: #3a3a3a;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn {
+            background: #5a5a5a;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn:active:not(:disabled) {
+            background: #474747;
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4a7c4e;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            z-index: 2000;
+            animation: slideDown 0.3s ease;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        . notification.error {
+            background: #7c4a4a;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        . stat-card {
+            background: #252525;
+            border: 1px solid #404040;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        . stat-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .timer {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="balance-group">
+                <div class="balance">
+                    <span>⭐️</span>
+                    <span id="starsBalance">0</span>
+                </div>
+                <div class="balance">
+                    <span>💎</span>
+                    <span id="diamondsBalance">0</span>
+                </div>
+            </div>
+            <button class="topup-btn" id="topupHeaderBtn">Пополнить</button>
+        </div>
+
+        <div class="content">
+            <div class="page welcome-page active" id="welcomePage">
+                <div class="welcome-sticker">🎁</div>
+                <div class="welcome-title">Добро пожаловать! </div>
+                <div class="welcome-title" style="font-size: 18px; color: #999; margin-bottom: 30px;">Получи 500 💎 в подарок!</div>
+                <button class="btn" id="claimBonusBtn">Забрать бонус</button>
+            </div>
+
+            <div class="page" id="gamesPage">
+                <div class="games-page">
+                    <div class="games-grid">
+                        <div class="game-card" id="slotsCard">
+                            <div class="game-icon">🎰</div>
+                            <div class="game-title">Слоты</div>
+                            <div class="game-desc">Крутите слоты, получайте призы</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="slotsPage">
+                <div class="slots-page">
+                    <h2>🎰 Слоты</h2>
+                    <div class="slot-cost">Ставка: 100 ⭐️</div>
+                    <div class="slots-container">
+                        <div class="slot" id="slot1">🎁</div>
+                        <div class="slot-arrow">▼</div>
+                        <div class="slot" id="slot2">💎</div>
+                    </div>
+                    <button class="btn" id="spinBtn" style="width: 100px;">Крутить</button>
+                    <div class="slot-result" id="slotResult"></div>
+                    <button class="btn" id="backBtn" style="margin-top: 20px; background: #3a3a3a;">Назад</button>
+                </div>
+            </div>
+
+            <div class="page" id="freePage">
+                <div class="free-page">
+                    <div class="task-section">
+                        <div class="section-title">Ежедневный бонус</div>
+                        <button class="btn daily-bonus-btn" id="dailyBonusBtn">Получить +100 💎</button>
+                        <div class="timer" id="bonusTimer"></div>
+                    </div>
+
+                    <div class="task-section">
+                        <div class="section-title">Задания</div>
+                        <div class="task-list" id="tasksList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="profilePage">
+                <div class="profile-page">
+                    <div class="profile-avatar" id="profileAvatar">👤</div>
+                    <div class="profile-name" id="profileName">Пользователь</div>
+                    <div class="profile-username" id="profileUsername">@user</div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Игр сыграно</div>
+                            <div class="stat-value" id="gamesPlayed">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Крупный выигрыш</div>
+                            <div class="stat-value" id="biggestWin">0</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-balances">
+                        <div class="profile-balance-card">
+                            <div class="balance-label">Stars</div>
+                            <div class="balance-amount" id="profileStars">0</div>
+                        </div>
+                        <div class="profile-balance-card">
+                            <div class="balance-label">Алмазы</div>
+                            <div class="balance-amount" id="profileDiamonds">0</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-menu">
+                        <button class="profile-menu-btn" id="referralBtn">
+                            <span>Реферальная ссылка</span>
+                            <span>→</span>
+                        </button>
+                        <button class="profile-menu-btn" id="historyBtn">
+                            <span>История транзакций</span>
+                            <span>→</span>
+                        </button>
+                        <button class="profile-menu-btn" id="supportBtn">
+                            <span>Поддержка</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button class="nav-item active" id="navSlots" data-page="gamesPage">
+                <span>🎮</span>
+                <span>Игры</span>
+            </button>
+            <button class="nav-item" id="navFree" data-page="freePage">
+                <span>🎁</span>
+                <span>Бесплатно</span>
+            </button>
+            <button class="nav-item" id="navProfile" data-page="profilePage">
+                <span>👤</span>
+                <span>Профиль</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="topupModal">
+        <div class="modal-content">
+            <div class="modal-header">Пополнить баланс</div>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="purchaseStars(100)">100 Stars</button>
+                <button class="modal-btn" onclick="purchaseStars(500)">500 Stars</button>
+                <button class="modal-btn" onclick="purchaseStars(1000)">1000 Stars</button>
+                <button class="modal-btn" onclick="purchaseStars(5000)">5000 Stars</button>
+            </div>
+            <button class="modal-close" onclick="closeModal('topupModal')">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">История транзакций</div>
+            <div id="historyList" style="max-height: 400px; overflow-y: auto;"></div>
+            <button class="modal-close" onclick="closeModal('historyModal')" style="margin-top: 12px;">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        const DAILY_BONUS = 100;
+        const DAILY_BONUS_INTERVAL = 24 * 60 * 60 * 1000;
+
+        let userData = JSON.parse(localStorage.getItem('userData')) || {
+            userId: 'user_' + Date.now(),
+            firstName: 'Пользователь',
+            username: 'user',
+            stars: 0,
+            diamonds: 0,
+            bonusClaimed: false,
+            lastDailyBonus: 0,
+            gamesPlayed: 0,
+            biggestWin: 0,
+            referralCode: Math.random().toString(36).substr(2, 9),
+            transactions: [],
+            tasks: [
+                { id: 1, name: 'Подписаться на канал', reward: 200, completed: false, type: 'subscribe', link: 'https://t.me/example1' },
+                { id: 2, name: 'Подписаться на второй канал', reward: 300, completed: false, type: 'subscribe', link: 'https://t.me/example2' },
+                { id: 3, name: 'Пригласить друга', reward: 1000, completed: false, type: 'referral', link: '' }
+            ]
+        };
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            const webApp = window.Telegram.WebApp;
+            webApp.ready();
+            webApp.expand();
+            
+            const user = webApp.initDataUnsafe?. user;
+            if (user) {
+                userData.firstName = user.first_name || 'Пользователь';
+                userData.username = user. username || 'user';
+            }
+        }
+
+        function saveUserData() {
+            localStorage. setItem('userData', JSON.stringify(userData));
+        }
+
+        function addTransaction(type, amount, description) {
+            userData.transactions.unshift({
+                type,
+                amount,
+                description,
+                timestamp: new Date().toLocaleString('ru-RU'),
+                date: Date.now()
+            });
+            if (userData.transactions.length > 100) {
+                userData.transactions = userData.transactions.slice(0, 100);
+            }
+            saveUserData();
+        }
+
+        function updateUI() {
+            document.getElementById('starsBalance').textContent = userData.stars;
+            document.getElementById('diamondsBalance').textContent = userData. diamonds;
+            document.getElementById('profileStars').textContent = userData. stars;
+            document.getElementById('profileDiamonds').textContent = userData.diamonds;
+            document.getElementById('profileName').textContent = userData.firstName;
+            document.getElementById('profileUsername').textContent = '@' + userData.username;
+            document.getElementById('gamesPlayed').textContent = userData.gamesPlayed;
+            document.getElementById('biggestWin').textContent = userData.biggestWin;
+            saveUserData();
+        }
+
+        function showNotification(text, isError = false) {
+            const notif = document.createElement('div');
+            notif.className = 'notification' + (isError ? ' error' : '');
+            notif. textContent = text;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === pageId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        document.getElementById('claimBonusBtn').addEventListener('click', function() {
+            if (userData.bonusClaimed) {
+                showNotification('Бонус уже получен!', true);
+                return;
+            }
+            
+            this.disabled = true;
+            const loader = document.createElement('div');
+            loader.style.cssText = 'width: 20px; height: 20px; border: 2px solid #999; border-top: 2px solid #5a5a5a; border-radius: 50%; animation: spin 1s linear infinite;';
+            this.innerHTML = '';
+            this.appendChild(loader);
+
+            setTimeout(() => {
+                userData.diamonds += 500;
+                userData.bonusClaimed = true;
+                addTransaction('bonus', 500, 'Приветственный бонус');
+                updateUI();
+                createConfetti();
+                showPage('gamesPage');
+            }, 1000);
+        });
+
+        document. getElementById('topupHeaderBtn').addEventListener('click', () => {
+            openModal('topupModal');
+        });
+
+        document.getElementById('dailyBonusBtn').addEventListener('click', function() {
+            const now = Date.now();
+            if (now >= userData.lastDailyBonus + DAILY_BONUS_INTERVAL || userData.lastDailyBonus === 0) {
+                userData.diamonds += DAILY_BONUS;
+                userData.lastDailyBonus = now;
+                addTransaction('daily_bonus', DAILY_BONUS, 'Ежедневный бонус');
+                updateUI();
+                updateDailyBonusTimer();
+                showNotification(`+${DAILY_BONUS} 💎 получены! `);
+                createConfetti();
+            }
+        });
+
+        document.getElementById('slotsCard').addEventListener('click', function() {
+            showPage('slotsPage');
+        });
+
+        document.getElementById('spinBtn').addEventListener('click', function() {
+            if (userData.stars < 100) {
+                showNotification('Недостаточно Stars! ', true);
+                return;
+            }
+
+            this.disabled = true;
+            const slots = [document.getElementById('slot1'), document.getElementById('slot2')];
+            const symbols = ['🎁', '💎', '🏆', '💰', '🌟', '👑'];
+
+            slots.forEach(slot => slot.classList.add('spinning'));
+
+            setTimeout(() => {
+                const prizes = [50, 100, 200, 500, 1000, 2000];
+                const prize = prizes[Math.floor(Math.random() * prizes.length)];
+
+                slots.forEach(slot => {
+                    slot.textContent = symbols[Math. floor(Math.random() * symbols.length)];
+                    slot.classList.remove('spinning');
+                });
+
+                userData.stars -= 100;
+                userData.diamonds += prize;
+                userData.gamesPlayed += 1;
+                if (prize > userData.biggestWin) userData.biggestWin = prize;
+
+                updateUI();
+                addTransaction('spin_win', prize, 'Выигрыш в слотах');
+                document.getElementById('slotResult').textContent = `🎉 Выигрыш: +${prize} 💎`;
+
+                if (prize >= 1000) createConfetti();
+                this.disabled = false;
+            }, 300);
+        });
+
+        document. getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('slotResult').textContent = '';
+            showPage('gamesPage');
+        });
+
+        document.getElementById('referralBtn').addEventListener('click', function() {
+            const link = `https://t.me/example_bot?start=${userData.referralCode}`;
+            navigator.clipboard.writeText(link);
+            showNotification('Реферальная ссылка скопирована!');
+        });
+
+        document.getElementById('historyBtn').addEventListener('click', function() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (userData.transactions.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999;">История пуста</p>';
+            } else {
+                userData.transactions.forEach(tx => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between;';
+                    const sign = ['spin_win', 'daily_bonus', 'bonus', 'task_reward']. includes(tx.type) ? '+' : '-';
+                    const color = sign === '+' ? '#4a7c4e' : '#7c4a4a';
+                    div.innerHTML = `
+                        <div style="font-size: 13px;">
+                            <div>${tx.description}</div>
+                            <div style="font-size: 11px; color: #999;">${tx.timestamp}</div>
+                        </div>
+                        <div style="color: ${color}; font-weight: 700;">${sign}${tx.amount} 💎</div>
+                    `;
+                    historyList.appendChild(div);
+                });
+            }
+            
+            openModal('historyModal');
+        });
+
+        document.getElementById('supportBtn').addEventListener('click', () => {
+            window.open('https://t.me/azotherm', '_blank');
+        });
+
+        document.querySelectorAll('.nav-item'). forEach(item => {
+            item.addEventListener('click', () => {
+                showPage(item.dataset.page);
+            });
+        });
+
+        function purchaseStars(amount) {
+            userData.stars += amount;
+            addTransaction('purchase', amount, `Покупка ${amount} Stars`);
+            updateUI();
+            closeModal('topupModal');
+            showNotification(`+${amount} ⭐️ добавлены!`);
+        }
+
+        function updateDailyBonusTimer() {
+            const btn = document.getElementById('dailyBonusBtn');
+            const timer = document.getElementById('bonusTimer');
+            const now = Date.now();
+            const nextTime = userData.lastDailyBonus + DAILY_BONUS_INTERVAL;
+
+            if (now >= nextTime) {
+                btn.disabled = false;
+                timer.textContent = 'Готово к получению! ';
+            } else {
+                btn.disabled = true;
+                const left = nextTime - now;
+                const hours = Math.floor(left / (1000 * 60 * 60));
+                const mins = Math.floor((left % (1000 * 60 * 60)) / (1000 * 60));
+                timer.textContent = `Следующий бонус через ${hours}ч ${mins}м`;
+            }
+        }
+
+        function initTasks() {
+            const tasksList = document.getElementById('tasksList');
+            tasksList.innerHTML = '';
+
+            userData.tasks. forEach((task, idx) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-reward">Награда: +${task.reward} 💎</div>
+                    </div>
+                    <button class="task-action-btn" onclick="completeTask(${idx})">
+                        ${task.completed ? '✓ Выполнено' : 'Выполнить'}
+                    </button>
+                `;
+                tasksList.appendChild(div);
+            });
+        }
+
+        function completeTask(idx) {
+            const task = userData.tasks[idx];
+            if (! task.completed) {
+                task.completed = true;
+                userData.diamonds += task.reward;
+                addTransaction('task_reward', task. reward, task.name);
+                updateUI();
+                initTasks();
+                showNotification(`+${task.reward} 💎 за выполнение задания!`);
+                
+                if (task.link) {
+                    window.open(task.link, '_blank');
+                }
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.textContent = ['🎉', '✨', '🎊', '⭐', '💎'][Math.floor(Math.random() * 5)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-20px';
+                confetti.style.fontSize = (Math.random() * 24 + 16) + 'px';
+                confetti.style.setProperty('--tx', (Math.random() - 0.5) * 300 + 'px');
+                confetti.style.setProperty('--ty', Math.random() * 400 + 150 + 'px');
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        updateUI();
+        initTasks();
+        updateDailyBonusTimer();
+        setInterval(updateDailyBonusTimer, 60000);
+    </script>
+</body>
+</html>
