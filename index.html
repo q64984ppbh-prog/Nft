@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px 15px 80px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .deposit-btn {
+            background: linear-gradient(135deg, var(--secondary), #eab308);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            justify-content: center;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .balance-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--card-bg), rgba(30, 41, 59, 0.6));
+            padding: 20px 15px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .balance-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--light);
+        }
+
+        .stars-card .balance-icon { color: var(--secondary); }
+        .gems-card .balance-icon { color: #10b981; }
+
+        .main-content {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-height: 400px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--light);
+        }
+
+        .currency-selector {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 15px;
+            padding: 6px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .currency-option {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .currency-option.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .bet-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .bet-option {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 14px 8px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .bet-option.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--secondary);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            transform: scale(1.05);
+        }
+
+        .slots-machine {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .slots-reels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+
+        .reel {
+            flex: 1;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #334155, #1e293b);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .reel.win {
+            animation: winGlow 0.6s ease;
+        }
+
+        @keyframes winGlow {
+            0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
+            50% { border-color: var(--secondary); box-shadow: 0 0 20px var(--secondary); }
+        }
+
+        .spin-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--secondary), #eab308);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spin-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tasks-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .task-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+        }
+
+        .task-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .task-reward {
+            color: var(--secondary);
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .task-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .execute-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+
+        .task-button:active {
+            transform: scale(0.95);
+        }
+
+        .task-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 4px solid var(--primary);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-username {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .profile-balances {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .profile-balance {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .balance-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .balance-label-profile {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        .profile-actions {
+            display: grid;
+            gap: 12px;
+        }
+
+        .profile-action {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .profile-action:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 80px;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon,
+        .nav-item.active .nav-label {
+            color: white;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, var(--card-bg), #1e293b);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .popup-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .popup-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .popup-message {
+            color: var(--gray);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .popup-bonus {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--secondary), #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+            text-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .popup-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .popup-button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .deposit-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .deposit-option {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 20px 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .deposit-option.active {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(245, 158, 11, 0.2));
+            transform: scale(1.05);
+        }
+
+        .deposit-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .deposit-bonus {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .deposit-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--secondary), #eab308);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .daily-bonus {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .bonus-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .bonus-amount {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--secondary);
+            margin: 15px 0;
+        }
+
+        .bonus-timer {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .bonus-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti 3s ease-in-out;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 1001;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 90%;
+        }
+
+        .alert.error { background: var(--danger); }
+        .alert.info { background: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">🎰 Crypto Casino</div>
+            <button class="deposit-btn" onclick="showSection('deposit')">
+                <i class="fas fa-plus"></i> Пополнить
+            </button>
+        </div>
+
+        <div class="online-indicator">
+            <div class="online-dot"></div>
+            <span>436 онлайн</span>
+        </div>
+
+        <div class="balance-cards">
+            <div class="balance-card stars-card">
+                <div class="balance-icon">⭐</div>
+                <div class="balance-label">BALANCE STARS</div>
+                <div class="balance-amount" id="stars-balance">0.05</div>
+            </div>
+            <div class="balance-card gems-card">
+                <div class="balance-icon">💎</div>
+                <div class="balance-label">BALANCE GEMS</div>
+                <div class="balance-amount" id="gems-balance">0</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="slots-section">
+                <h2 class="section-title">🎯 Игровые Слоты</h2>
+                
+                <div class="currency-selector">
+                    <div class="currency-option active" onclick="setCurrency('gems')">💎 Играть за GEMS</div>
+                    <div class="currency-option" onclick="setCurrency('stars')">⭐ Играть за STARS</div>
+                </div>
+
+                <div class="bet-selector">
+                    <div class="bet-option active" onclick="setBet(10)">10</div>
+                    <div class="bet-option" onclick="setBet(50)">50</div>
+                    <div class="bet-option" onclick="setBet(100)">100</div>
+                    <div class="bet-option" onclick="setBet(500)">500</div>
+                </div>
+
+                <div class="slots-machine">
+                    <div class="slots-reels">
+                        <div class="reel" id="reel1">🍒</div>
+                        <div class="reel" id="reel2">🍋</div>
+                        <div class="reel" id="reel3">⭐</div>
+                    </div>
+                    <button class="spin-button" onclick="spinSlots()">
+                        <i class="fas fa-play"></i> КРУТИТЬ СЛОТЫ
+                    </button>
+                </div>
+            </div>
+
+            <div id="free-section" class="hidden">
+                <h2 class="section-title">🎁 Бесплатные Награды</h2>
+                
+                <div class="daily-bonus">
+                    <div class="bonus-title">🎯 Ежедневный бонус</div>
+                    <div class="bonus-amount" id="daily-bonus-amount">100-500 💎</div>
+                    <div class="bonus-timer" id="bonus-timer">Доступно через: 00:00:00</div>
+                    <button class="bonus-button" onclick="claimDailyBonus()" id="daily-bonus-btn">
+                        🎁 ЗАБРАТЬ БОНУС
+                    </button>
+                </div>
+                
+                <div class="tasks-grid">
+                    <div class="task-card">
+                        <div class="task-icon">📺</div>
+                        <div class="task-content">
+                            <div class="task-title">Подпишись на канал @example1</div>
+                            <div class="task-reward">+200 💎</div>
+                        </div>
+                        <div class="task-buttons">
+                            <button class="task-button execute-btn" onclick="executeTask(1)">Выполнить</button>
+                            <button class="task-button check-btn" onclick="checkTask(1)">Проверить</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-icon">❤️</div>
+                        <div class="task-content">
+                            <div class="task-title">Подпишись на канал @example2</div>
+                            <div class="task-reward">+300 💎 + 50 ⭐</div>
+                        </div>
+                        <div class="task-buttons">
+                            <button class="task-button execute-btn" onclick="executeTask(2)">Выполнить</button>
+                            <button class="task-button check-btn" onclick="checkTask(2)">Проверить</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-icon">👥</div>
+                        <div class="task-content">
+                            <div class="task-title">Пригласи друга</div>
+                            <div class="task-reward">+1000 💎 + 10%</div>
+                        </div>
+                        <button class="task-button check-btn" onclick="showReferral()">Пригласить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profile-section" class="hidden">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-name" id="user-name">azotherm</div>
+                    <div class="profile-username" id="user-username">@username</div>
+                </div>
+                
+                <div class="profile-balances">
+                    <div class="profile-balance">
+                        <div class="balance-value" id="profile-stars">0.05</div>
+                        <div class="balance-label-profile">STARS</div>
+                    </div>
+                    <div class="profile-balance">
+                        <div class="balance-value" id="profile-gems">0</div>
+                        <div class="balance-label-profile">GEMS</div>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <div class="profile-action" onclick="withdrawGems()">
+                        💎 Вывести GEMS
+                    </div>
+                    <div class="profile-action" onclick="showTransactionHistory()">
+                        📊 История транзакций
+                    </div>
+                    <div class="profile-action" onclick="showReferral()">
+                        👥 Реферальная ссылка
+                    </div>
+                    <div class="profile-action" onclick="showSection('deposit')">
+                        ⭐ Пополнить Stars
+                    </div>
+                </div>
+            </div>
+
+            <div id="deposit-section" class="hidden">
+                <h2 class="section-title">💳 Пополнение Stars</h2>
+                
+                <div class="deposit-options">
+                    <div class="deposit-option active" onclick="selectDeposit(200)">
+                        <div class="deposit-amount">+200 ⭐</div>
+                        <div class="deposit-bonus">Базовый</div>
+                    </div>
+                    <div class="deposit-option" onclick="selectDeposit(500)">
+                        <div class="deposit-amount">+500 ⭐</div>
+                        <div class="deposit-bonus">Популярный</div>
+                    </div>
+                    <div class="deposit-option" onclick="selectDeposit(1000)">
+                        <div class="deposit-amount">+1000 ⭐</div>
+                        <div class="deposit-bonus">+50 бонус</div>
+                    </div>
+                    <div class="deposit-option" onclick="selectDeposit(5000)">
+                        <div class="deposit-amount">+5000 ⭐</div>
+                        <div class="deposit-bonus">+500 бонус</div>
+                    </div>
+                </div>
+                
+                <button class="deposit-button" onclick="processPayment()">
+                    <i class="fas fa-bolt"></i> ОПЛАТИТЬ СЕЙЧАС
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('slots')">
+            <div class="nav-icon">🎰</div>
+            <div class="nav-label">Слоты</div>
+        </div>
+        <div class="nav-item" onclick="showSection('free')">
+            <div class="nav-icon">🎁</div>
+            <div class="nav-label">Бесплатно</div>
+        </div>
+        <div class="nav-item" onclick="showSection('profile')">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Профиль</div>
+        </div>
+    </div>
+
+    <div id="welcome-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-icon">🎉</div>
+            <div class="popup-title">Добро пожаловать!</div>
+            <div class="popup-message">Получите 500 💎 в подарок за регистрацию!</div>
+            <div class="popup-bonus">500 💎</div>
+            <button class="popup-button" onclick="claimWelcomeBonus()">
+                <i class="fas fa-gift"></i> ЗАБРАТЬ БОНУС
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.BackButton.hide();
+
+        let userData = {
+            gems: 0,
+            stars: 0.05,
+            username: 'azotherm',
+            firstName: 'Azotherm',
+            photoUrl: '',
+            tasks: {
+                1: { completed: false, type: 'subscribe', link: 'https://t.me/example1', reward: { gems: 200 } },
+                2: { completed: false, type: 'subscribe', link: 'https://t.me/example2', reward: { gems: 300, stars: 50 } },
+                3: { completed: false, type: 'referral', reward: { gems: 1000 } }
+            },
+            dailyBonus: {
+                available: true,
+                lastClaim: null,
+                streak: 1
+            },
+            transactions: [],
+            referralCode: null,
+            referrals: []
+        };
+
+        let currentSection = 'slots';
+        let currentCurrency = 'gems';
+        let currentBet = 10;
+        let selectedDepositAmount = 200;
+        let isSpinning = false;
+
+        const symbols = ['🍒', '🍋', '⭐', '🍊', '🔔', '💎'];
+        const symbolWeights = [25, 25, 15, 20, 10, 5];
+        const RTP = 0.94;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initUserData();
+            updateUI();
+            startBonusTimer();
+            
+            if (!localStorage.getItem('welcomeShown')) {
+                setTimeout(() => {
+                    document.getElementById('welcome-popup').classList.remove('hidden');
+                }, 1000);
+            }
+        });
+
+        function initUserData() {
+            const savedData = localStorage.getItem('userData');
+            if (savedData) {
+                userData = { ...userData, ...JSON.parse(savedData) };
+            }
+
+            if (tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                userData.firstName = user.first_name || 'Игрок';
+                userData.username = user.username ? `@${user.username}` : '';
+                userData.photoUrl = user.photo_url || '';
+                userData.referralCode = user.id ? `ref_${user.id}` : `ref_${Date.now()}`;
+                
+                document.getElementById('user-name').textContent = userData.firstName;
+                document.getElementById('user-username').textContent = userData.username;
+                
+                if (userData.photoUrl) {
+                    document.getElementById('user-avatar').innerHTML = `<img src="${userData.photoUrl}" style="width:100%;height:100%;border-radius:50%;" alt="Avatar">`;
+                }
+            }
+
+            saveUserData();
+        }
+
+        function saveUserData() {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        function showSection(section) {
+            document.getElementById('slots-section').classList.add('hidden');
+            document.getElementById('free-section').classList.add('hidden');
+            document.getElementById('profile-section').classList.add('hidden');
+            document.getElementById('deposit-section').classList.add('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(section + '-section').classList.remove('hidden');
+            
+            const navIndex = {'slots': 0, 'free': 1, 'profile': 2}[section];
+            if (navIndex !== undefined) {
+                document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            }
+            
+            currentSection = section;
+            updateUI();
+        }
+
+        function setCurrency(currency) {
+            currentCurrency = currency;
+            document.querySelectorAll('.currency-option').forEach(opt => opt.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function setBet(amount) {
+            currentBet = amount;
+            document.querySelectorAll('.bet-option').forEach(opt => opt.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function selectDeposit(amount) {
+            selectedDepositAmount = amount;
+            document.querySelectorAll('.deposit-option').forEach(opt => opt.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function spinSlots() {
+            if (isSpinning) return;
+            
+            const balance = currentCurrency === 'gems' ? userData.gems : userData.stars;
+            if (balance < currentBet) {
+                showAlert('❌ Недостаточно средств!', 'error');
+                return;
+            }
+
+            isSpinning = true;
+            const spinButton = document.querySelector('.spin-button');
+            spinButton.disabled = true;
+            spinButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> КРУТИТСЯ...';
+
+            updateBalance(currentCurrency, -currentBet);
+
+            const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+            const spins = [25, 35, 45];
+            const results = [];
+
+            reels.forEach((reel, index) => {
+                let spinCount = 0;
+                const spinInterval = setInterval(() => {
+                    reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    spinCount++;
+                    
+                    if (spinCount >= spins[index]) {
+                        clearInterval(spinInterval);
+                        const finalSymbol = getWeightedRandomSymbol();
+                        reel.textContent = finalSymbol;
+                        results.push(finalSymbol);
+                        
+                        if (results.length === 3) {
+                            setTimeout(() => finishSpin(results, reels), 500);
+                        }
+                    }
+                }, 80);
+            });
+        }
+
+        function getWeightedRandomSymbol() {
+            const random = Math.random() * 100;
+            let sum = 0;
+            for (let i = 0; i < symbolWeights.length; i++) {
+                sum += symbolWeights[i];
+                if (random <= sum) return symbols[i];
+            }
+            return symbols[0];
+        }
+
+        function finishSpin(results, reels) {
+            isSpinning = false;
+            const spinButton = document.querySelector('.spin-button');
+            spinButton.disabled = false;
+            spinButton.innerHTML = '<i class="fas fa-play"></i> КРУТИТЬ СЛОТЫ';
+
+            let winAmount = calculateWin(results, currentBet);
+            
+            if (winAmount > 0) {
+                updateBalance(currentCurrency, winAmount);
+                reels.forEach(reel => reel.classList.add('win'));
+                createConfetti();
+                showWinPopup(winAmount);
+                
+                userData.transactions.unshift({
+                    type: 'win',
+                    amount: winAmount,
+                    currency: currentCurrency,
+                    game: 'slots',
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            setTimeout(() => {
+                reels.forEach(reel => reel.classList.remove('win'));
+            }, 1000);
+
+            saveUserData();
+        }
+
+        function calculateWin(results, bet) {
+            if (results[0] === results[1] && results[1] === results[2]) {
+                const multiplier = (symbols.indexOf(results[0]) + 2) * 2;
+                return Math.floor(bet * multiplier * RTP);
+            } else if (results[0] === results[1] || results[1] === results[2]) {
+                return Math.floor(bet * 2 * RTP);
+            }
+            return 0;
+        }
+
+        function updateBalance(currency, amount) {
+            if (currency === 'gems') {
+                userData.gems += amount;
+                document.getElementById('gems-balance').textContent = userData.gems;
+                document.getElementById('profile-gems').textContent = userData.gems;
+            } else {
+                userData.stars = parseFloat((userData.stars + amount).toFixed(2));
+                document.getElementById('stars-balance').textContent = userData.stars.toFixed(2);
+                document.getElementById('profile-stars').textContent = userData.stars.toFixed(2);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('gems-balance').textContent = userData.gems;
+            document.getElementById('stars-balance').textContent = userData.stars.toFixed(2);
+            document.getElementById('profile-gems').textContent = userData.gems;
+            document.getElementById('profile-stars').textContent = userData.stars.toFixed(2);
+
+            updateTasksUI();
+        }
+
+        function updateTasksUI() {
+            const tasks = userData.tasks;
+            for (const taskId in tasks) {
+                const task = tasks[taskId];
+                const buttons = document.querySelectorAll(`[onclick="executeTask(${taskId})"], [onclick="checkTask(${taskId})"]`);
+                buttons.forEach(btn => {
+                    if (task.completed) {
+                        btn.disabled = true;
+                        btn.textContent = '✅ Выполнено';
+                        btn.style.background = '#64748b';
+                    }
+                });
+            }
+        }
+
+        function claimWelcomeBonus() {
+            userData.gems += 500;
+            updateBalance('gems', 0);
+            document.getElementById('welcome-popup').classList.add('hidden');
+            localStorage.setItem('welcomeShown', 'true');
+            
+            userData.transactions.unshift({
+                type: 'bonus',
+                amount: 500,
+                currency: 'gems',
+                description: 'Welcome bonus',
+                timestamp: new Date().toISOString()
+            });
+            
+            saveUserData();
+            showAlert('🎁 Бонус 500 💎 зачислен на ваш счет!', 'success');
+            showSection('slots');
+        }
+
+        function executeTask(taskId) {
+            const task = userData.tasks[taskId];
+            if (task.completed) {
+                showAlert('✅ Это задание уже выполнено!', 'info');
+                return;
+            }
+
+            if (task.type === 'subscribe') {
+                tg.openTelegramLink(task.link);
+            }
+        }
+
+        async function checkTask(taskId) {
+            const task = userData.tasks[taskId];
+            if (task.completed) {
+                showAlert('✅ Это задание уже выполнено!', 'info');
+                return;
+            }
+
+            const button = event.target;
+            button.textContent = '🔍 Проверяем...';
+            button.disabled = true;
+
+            try {
+                const isSubscribed = await checkSubscription(taskId);
+                
+                if (isSubscribed) {
+                    task.completed = true;
+                    
+                    if (task.reward.gems) {
+                        userData.gems += task.reward.gems;
+                    }
+                    if (task.reward.stars) {
+                        userData.stars += task.reward.stars;
+                    }
+                    
+                    updateUI();
+                    saveUserData();
+                    
+                    userData.transactions.unshift({
+                        type: 'task_reward',
+                        amount: task.reward.gems || task.reward.stars,
+                        currency: task.reward.gems ? 'gems' : 'stars',
+                        description: `Task ${taskId} completion`,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    showAlert(`✅ Задание выполнено! Награда: ${task.reward.gems ? task.reward.gems + ' 💎' : ''} ${task.reward.stars ? task.reward.stars + ' ⭐' : ''}`, 'success');
+                } else {
+                    showAlert('❌ Вы не подписаны на канал!', 'error');
+                    button.textContent = 'Проверить';
+                    button.disabled = false;
+                }
+            } catch (error) {
+                showAlert('❌ Ошибка проверки подписки', 'error');
+                button.textContent = 'Проверить';
+                button.disabled = false;
+            }
+        }
+
+        async function checkSubscription(taskId) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const random = Math.random();
+                    resolve(random > 0.3);
+                }, 2000);
+            });
+        }
+
+        function claimDailyBonus() {
+            if (!userData.dailyBonus.available) {
+                showAlert('📅 Ежедневный бонус уже получен! Возвращайтесь завтра.', 'info');
+                return;
+            }
+
+            const baseBonus = 100;
+            const streakBonus = Math.min(userData.dailyBonus.streak * 50, 400);
+            const totalBonus = baseBonus + streakBonus;
+
+            userData.gems += totalBonus;
+            userData.dailyBonus.available = false;
+            userData.dailyBonus.lastClaim = new Date().toISOString();
+            userData.dailyBonus.streak++;
+            
+            updateUI();
+            saveUserData();
+            
+            userData.transactions.unshift({
+                type: 'daily_bonus',
+                amount: totalBonus,
+                currency: 'gems',
+                description: `Daily bonus (streak: ${userData.dailyBonus.streak - 1})`,
+                timestamp: new Date().toISOString()
+            });
+            
+            document.getElementById('daily-bonus-btn').textContent = '✅ ПОЛУЧЕНО';
+            document.getElementById('daily-bonus-btn').disabled = true;
+            
+            showAlert(`🎁 Ежедневный бонус: +${totalBonus} 💎 (стрик: ${userData.dailyBonus.streak - 1})`, 'success');
+        }
+
+        function startBonusTimer() {
+            setInterval(() => {
+                if (userData.dailyBonus.lastClaim) {
+                    const lastClaim = new Date(userData.dailyBonus.lastClaim);
+                    const now = new Date();
+                    const diff = now - lastClaim;
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    
+                    if (hours >= 24) {
+                        userData.dailyBonus.available = true;
+                        document.getElementById('daily-bonus-btn').textContent = '🎁 ЗАБРАТЬ БОНУС';
+                        document.getElementById('daily-bonus-btn').disabled = false;
+                    } else {
+                        const remaining = 24 - hours;
+                        document.getElementById('bonus-timer').textContent = `Доступно через: ${remaining}:00:00`;
+                    }
+                }
+            }, 1000);
+        }
+
+        function showReferral() {
+            const referralLink = `https://t.me/your_bot?start=${userData.referralCode}`;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    showAlert(
+                        `👥 Реферальная программа\n\n` +
+                        `✅ Ссылка скопирована!\n${referralLink}\n\n` +
+                        `💎 За каждого друга: +1000 💎\n` +
+                        `⭐ +10% от его покупок Stars`,
+                        'success'
+                    );
+                });
+            } else {
+                showAlert(
+                    `👥 Реферальная программа\n\n` +
+                    `Ваша ссылка:\n${referralLink}\n\n` +
+                    `💎 За каждого друга: +1000 💎\n` +
+                    `⭐ +10% от его покупок Stars`,
+                    'info'
+                );
+            }
+        }
+
+        function processPayment() {
+            const invoiceParams = {
+                title: `Пополнение Stars - ${selectedDepositAmount} ⭐`,
+                description: `Пополнение баланса на ${selectedDepositAmount} Stars`,
+                payload: `deposit_${selectedDepositAmount}_${Date.now()}`,
+                currency: 'XTR',
+                prices: JSON.stringify([{
+                    label: `${selectedDepositAmount} Stars`,
+                    amount: selectedDepositAmount * 100
+                }])
+            };
+
+            tg.openInvoice(`invoice_${selectedDepositAmount}`, (status) => {
+                if (status === 'paid') {
+                    userData.stars += selectedDepositAmount;
+                    updateBalance('stars', 0);
+                    
+                    userData.transactions.unshift({
+                        type: 'deposit',
+                        amount: selectedDepositAmount,
+                        currency: 'stars',
+                        description: 'Stars deposit',
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    saveUserData();
+                    showAlert(`✅ Баланс пополнен на ${selectedDepositAmount} ⭐`, 'success');
+                } else if (status === 'failed') {
+                    showAlert('❌ Оплата не прошла', 'error');
+                } else if (status === 'cancelled') {
+                    showAlert('⚠️ Оплата отменена', 'info');
+                }
+            });
+        }
+
+        function withdrawGems() {
+            showAlert('🚧 Функция вывода в разработке\n\nСледите за обновлениями!', 'info');
+        }
+
+        function showTransactionHistory() {
+            let historyText = '📊 История транзакций:\n\n';
+            userData.transactions.slice(0, 10).forEach(transaction => {
+                const date = new Date(transaction.timestamp).toLocaleDateString();
+                const amount = transaction.amount + (transaction.currency === 'gems' ? ' 💎' : ' ⭐');
+                const type = transaction.type === 'deposit' ? '📥' : 
+                            transaction.type === 'win' ? '🎰' : 
+                            transaction.type === 'bonus' ? '🎁' : '✅';
+                historyText += `${type} ${date}: ${amount}\n`;
+            });
+            
+            showAlert(historyText || '📊 История транзакций:\n\nПока здесь пусто...', 'info');
+        }
+
+        function showWinPopup(amount) {
+            showAlert(`🎉 Поздравляем! Вы выиграли ${amount} ${currentCurrency === 'gems' ? '💎' : '⭐'}`, 'success');
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = getRandomColor();
+                    confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#f59e0b', '#ef4444', '#10b981', '#6366f1', '#8b5cf6'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
