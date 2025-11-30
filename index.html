@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>NFT Рулетка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(20, 20, 40, 0.8);
+            border-bottom: 1px solid rgba(90, 90, 180, 0.3);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .balance-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        . balance {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(90, 90, 180, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(90, 90, 180, 0.3);
+        }
+
+        .content-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 70px;
+        }
+
+        . page.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .roulette-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .roulette-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #5a5aff, #ff5aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .roulette-wheel {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff5aaa 0deg 30deg,
+                #5aff5a 30deg 60deg,
+                #5aafff 60deg 90deg,
+                #ffaa5a 90deg 120deg,
+                #ff5aaa 120deg 150deg,
+                #5aff5a 150deg 180deg,
+                #5aafff 180deg 210deg,
+                #ffaa5a 210deg 240deg,
+                #ff5aaa 240deg 270deg,
+                #5aff5a 270deg 300deg,
+                #5aafff 300deg 330deg,
+                #ffaa5a 330deg 360deg
+            );
+            box-shadow: 0 0 40px rgba(90, 90, 255, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            position: relative;
+            animation: spin 4s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(90, 90, 255, 0.5);
+        }
+
+        .roulette-wheel. stopped {
+            animation: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .roulette-pointer {
+            position: absolute;
+            top: -15px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #5a5aff;
+            z-index: 10;
+        }
+
+        .wheel-center {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #5a5aff, #2a2a5a);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .wheel-numbers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .bet-section {
+            width: 100%;
+            max-width: 300px;
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(90, 90, 180, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .bet-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        . bet-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        . bet-input {
+            flex: 1;
+            background: rgba(20, 20, 40, 0.8);
+            border: 1px solid rgba(90, 90, 180, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .bet-preset {
+            background: rgba(90, 90, 180, 0.3);
+            border: 1px solid rgba(90, 90, 180, 0.5);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bet-presets {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .spin-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #5a5aff, #ff5aaa);
+            border: none;
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(90, 90, 255, 0.4);
+        }
+
+        .spin-btn:active:not(:disabled) {
+            transform: scale(0.98);
+            box-shadow: 0 2px 10px rgba(90, 90, 255, 0.3);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            font-size: 18px;
+            font-weight: 700;
+            color: #5aff5a;
+            margin-top: 16px;
+            min-height: 24px;
+            text-align: center;
+        }
+
+        .stats-page {
+            padding: 16px;
+        }
+
+        .stat-card {
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(90, 90, 180, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #5a5aff, #ff5aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-page {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5a5aff, #ff5aaa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 16px;
+            box-shadow: 0 0 30px rgba(90, 90, 255, 0. 4);
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-id {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 24px;
+        }
+
+        . profile-stats {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .profile-menu {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        . profile-btn {
+            width: 100%;
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(90, 90, 180, 0. 3);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-btn:active {
+            background: rgba(30, 30, 60, 0.8);
+        }
+
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(10, 10, 20, 0.95);
+            border-top: 1px solid rgba(90, 90, 180, 0. 3);
+            display: flex;
+            justify-content: space-around;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            z-index: 200;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #808080;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        . nav-btn. active {
+            color: #5a5aff;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0. 8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            backdrop-filter: blur(5px);
+        }
+
+        . modal. active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 30, 60, 0.95), rgba(20, 20, 40, 0.95));
+            width: 100%;
+            max-height: 80%;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            border-top: 1px solid rgba(90, 90, 180, 0.3);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        . modal-btn {
+            background: rgba(90, 90, 180, 0.3);
+            border: 1px solid rgba(90, 90, 180, 0.5);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .modal-btn:active {
+            background: rgba(90, 90, 180, 0.5);
+        }
+
+        .modal-close {
+            width: 100%;
+            background: rgba(90, 90, 180, 0.2);
+            border: 1px solid rgba(90, 90, 180, 0. 3);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .notification {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(90, 255, 90, 0.2);
+            border: 1px solid #5aff5a;
+            color: #5aff5a;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideDown 0.3s ease;
+            font-size: 13px;
+            font-weight: 600;
+            max-width: 80%;
+            backdrop-filter: blur(5px);
+        }
+
+        . notification.error {
+            background: rgba(255, 90, 90, 0.2);
+            border-color: #ff5a5a;
+            color: #ff5a5a;
+        }
+
+        .notification.warning {
+            background: rgba(255, 170, 90, 0.2);
+            border-color: #ffaa5a;
+            color: #ffaa5a;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .history-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(90, 90, 180, 0. 2);
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-desc {
+            flex: 1;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .history-amount {
+            font-weight: 700;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+
+        . nft-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        . nft-card {
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(90, 90, 180, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nft-card:active {
+            transform: scale(0.98);
+            border-color: rgba(90, 90, 180, 0. 8);
+        }
+
+        .nft-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        . nft-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .nft-odds {
+            font-size: 11px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                🎰 NFT Рулетка
+            </div>
+            <div class="balance-group">
+                <div class="balance">
+                    <span>💰</span>
+                    <span id="balanceDisplay">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="page active" id="roulettePage">
+                <div class="roulette-page">
+                    <div class="roulette-title">🎡 Крутись! </div>
+                    
+                    <div class="roulette-wheel" id="rouletteWheel">
+                        <div class="roulette-pointer"></div>
+                        <div class="wheel-center"></div>
+                    </div>
+
+                    <div class="bet-section">
+                        <div class="bet-label">Выберите ставку</div>
+                        <div class="bet-presets" id="betPresets">
+                            <button class="bet-preset" onclick="setBetAmount(10)">10</button>
+                            <button class="bet-preset" onclick="setBetAmount(50)">50</button>
+                            <button class="bet-preset" onclick="setBetAmount(100)">100</button>
+                            <button class="bet-preset" onclick="setBetAmount(500)">500</button>
+                        </div>
+                        <div class="bet-input-group">
+                            <input type="number" id="betAmount" class="bet-input" placeholder="Ставка" value="10">
+                            <button class="bet-preset" onclick="maxBet()">MAX</button>
+                        </div>
+                        <button class="spin-btn" id="spinBtn" onclick="startSpin()">КРУТИТЬ (x2. 0)</button>
+                        <div class="result-display" id="resultDisplay"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="statsPage">
+                <div class="stats-page">
+                    <div class="stat-card">
+                        <div class="stat-label">Всего выигранно</div>
+                        <div class="stat-value" id="totalWins">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Всего проиграно</div>
+                        <div class="stat-value" id="totalLosses">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Лучший выигрыш</div>
+                        <div class="stat-value" id="bestWin">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Всего игр</div>
+                        <div class="stat-value" id="totalGames">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Процент побед</div>
+                        <div class="stat-value" id="winRate">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">История</div>
+                        <button class="profile-btn" onclick="openModal('historyModal')" style="margin-top: 12px;">
+                            <span>Посмотреть историю</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="profilePage">
+                <div class="profile-page">
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-name" id="profileName">Игрок</div>
+                    <div class="profile-id" id="profileId">ID: 0</div>
+
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Баланс</div>
+                            <div class="stat-value" id="profileBalance">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Уровень</div>
+                            <div class="stat-value" id="profileLevel">1</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-menu">
+                        <button class="profile-btn" onclick="openModal('topupModal')">
+                            <span>💰 Пополнить баланс</span>
+                            <span>→</span>
+                        </button>
+                        <button class="profile-btn" onclick="openModal('nftModal')">
+                            <span>🎨 NFT Коллекция</span>
+                            <span>→</span>
+                        </button>
+                        <button class="profile-btn" onclick="openModal('settingsModal')">
+                            <span>⚙️ Настройки</span>
+                            <span>→</span>
+                        </button>
+                        <button class="profile-btn" onclick="window.open('https://t.me/azotherm', '_blank')">
+                            <span>📞 Поддержка</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button class="nav-btn active" onclick="showPage('roulettePage')">
+                <span>🎰</span>
+                <span>Рулетка</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('statsPage')">
+                <span>📊</span>
+                <span>Статистика</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('profilePage')">
+                <span>👤</span>
+                <span>Профиль</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="topupModal">
+        <div class="modal-content">
+            <div class="modal-header">Пополнить баланс</div>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="topupBalance(100)">+100</button>
+                <button class="modal-btn" onclick="topupBalance(500)">+500</button>
+                <button class="modal-btn" onclick="topupBalance(1000)">+1000</button>
+                <button class="modal-btn" onclick="topupBalance(5000)">+5000</button>
+            </div>
+            <button class="modal-close" onclick="closeModal('topupModal')">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="modal" id="nftModal">
+        <div class="modal-content">
+            <div class="modal-header">🎨 NFT Коллекция</div>
+            <div class="nft-grid" id="nftGrid"></div>
+            <button class="modal-close" onclick="closeModal('nftModal')">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">⚙️ Настройки</div>
+            <div class="stat-card">
+                <div class="stat-label">Звук</div>
+                <input type="checkbox" id="soundToggle" checked>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Уведомления</div>
+                <input type="checkbox" id="notifToggle" checked>
+            </div>
+            <button class="modal-close" onclick="resetData()">Сбросить данные</button>
+            <button class="modal-close" onclick="closeModal('settingsModal')" style="margin-top: 12px;">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">История ставок</div>
+            <div id="historyList"></div>
+            <button class="modal-close" onclick="closeModal('historyModal')">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        const MULTIPLIER = 2. 0;
+        const COLORS = ['#ff5aaa', '#5aff5a', '#5aafff', '#ffaa5a'];
+
+        let gameData = {
+            userId: 'user_' + Date.now(),
+            balance: 1000,
+            level: 1,
+            totalWins: 0,
+            totalLosses: 0,
+            bestWin: 0,
+            totalGames: 0,
+            history: [],
+            nfts: [
+                { id: 1, name: 'Genesis', odds: 1. 5 },
+                { id: 2, name: 'Silver', odds: 1.8 },
+                { id: 3, name: 'Gold', odds: 2.0 },
+                { id: 4, name: 'Platinum', odds: 2.5 }
+            ]
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem('gameData');
+            if (saved) {
+                gameData = JSON. parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('gameData', JSON.stringify(gameData));
+        }
+
+        function initTelegram() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const webApp = window.Telegram.WebApp;
+                webApp.ready();
+                webApp.expand();
+                
+                const user = webApp.initDataUnsafe?. user;
+                if (user) {
+                    gameData.userId = user.id || gameData.userId;
+                }
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn. classList.remove('active'));
+            event.target.closest('.nav-btn')?.classList.add('active');
+
+            updateUI();
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function updateUI() {
+            document.getElementById('balanceDisplay').textContent = gameData.balance;
+            document.getElementById('profileBalance').textContent = gameData.balance;
+            document.getElementById('profileId').textContent = 'ID: ' + gameData. userId;
+            document.getElementById('profileLevel').textContent = gameData.level;
+            
+            document.getElementById('totalWins').textContent = gameData.totalWins;
+            document.getElementById('totalLosses'). textContent = gameData.totalLosses;
+            document.getElementById('bestWin').textContent = gameData.bestWin;
+            document.getElementById('totalGames').textContent = gameData.totalGames;
+            
+            const winRate = gameData.totalGames > 0 
+                ? Math.round((gameData.totalWins / gameData. totalGames) * 100)
+                : 0;
+            document.getElementById('winRate').textContent = winRate + '%';
+        }
+
+        function showNotification(text, type = 'success') {
+            const notif = document.createElement('div');
+            notif.className = 'notification ' + type;
+            notif. textContent = text;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        function setBetAmount(amount) {
+            document.getElementById('betAmount').value = amount;
+        }
+
+        function maxBet() {
+            document.getElementById('betAmount').value = gameData.balance;
+        }
+
+        function startSpin() {
+            const bet = parseInt(document.getElementById('betAmount'). value) || 0;
+            const btn = document.getElementById('spinBtn');
+
+            if (bet <= 0) {
+                showNotification('Введите ставку! ', 'warning');
+                return;
+            }
+
+            if (bet > gameData.balance) {
+                showNotification('Недостаточно средств!', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            const wheel = document.getElementById('rouletteWheel');
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.textContent = '';
+
+            wheel.classList.remove('stopped');
+            
+            const spins = Math.random() * 360 + 720;
+            const duration = Math.random() * 2 + 3;
+
+            wheel.style.transition = `transform ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+            wheel.style.transform = `rotate(${spins}deg)`;
+
+            setTimeout(() => {
+                wheel.classList.add('stopped');
+                
+                const finalDegree = spins % 360;
+                const segment = Math.floor(finalDegree / 90) % 4;
+                const win = Math.random() > 0.5;
+
+                if (win) {
+                    const prize = Math.round(bet * MULTIPLIER);
+                    gameData.balance += prize;
+                    gameData.totalWins += prize;
+                    gameData. bestWin = Math.max(gameData.bestWin, prize);
+                    resultDisplay.textContent = `🎉 ВЫ ВЫИГРАЛИ!  +${prize}`;
+                    resultDisplay.style.color = '#5aff5a';
+                    createConfetti();
+                } else {
+                    gameData.balance -= bet;
+                    gameData.totalLosses += bet;
+                    resultDisplay.textContent = `😢 Вы проиграли ${bet}`;
+                    resultDisplay.style.color = '#ff5a5a';
+                }
+
+                gameData.totalGames += 1;
+                gameData.history.unshift({
+                    date: new Date(). toLocaleString('ru-RU'),
+                    bet: bet,
+                    result: win ? 'WIN' : 'LOSS',
+                    prize: win ? bet * MULTIPLIER : -bet
+                });
+
+                if (gameData.history.length > 100) {
+                    gameData.history = gameData.history.slice(0, 100);
+                }
+
+                saveData();
+                updateUI();
+                btn.disabled = false;
+            }, duration * 1000);
+        }
+
+        function topupBalance(amount) {
+            gameData.balance += amount;
+            saveData();
+            updateUI();
+            closeModal('topupModal');
+            showNotification(`+${amount} добавлено!`);
+        }
+
+        function initNFTGrid() {
+            const grid = document.getElementById('nftGrid');
+            grid.innerHTML = '';
+            gameData.nfts.forEach(nft => {
+                const card = document.createElement('div');
+                card.className = 'nft-card';
+                card. innerHTML = `
+                    <div class="nft-icon">🎨</div>
+                    <div class="nft-name">${nft.name}</div>
+                    <div class="nft-odds">x${nft.odds}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (gameData.history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999;">История пуста</p>';
+                return;
+            }
+
+            gameData.history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                const color = item.result === 'WIN' ? '#5aff5a' : '#ff5a5a';
+                div.innerHTML = `
+                    <div class="history-desc">
+                        <div>${item.result === 'WIN' ? '✅ ВЫИГРЫШ' : '❌ ПРОИГРЫШ'}</div>
+                        <div class="history-time">${item.date}</div>
+                    </div>
+                    <div class="history-amount" style="color: ${color};">${item.result === 'WIN' ? '+' : '-'}${Math.abs(item.prize)}</div>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti. textContent = ['🎉', '✨', '💰', '🎊'][Math.floor(Math.random() * 4)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-20px';
+                confetti.style.fontSize = (Math.random() * 24 + 16) + 'px';
+                confetti.style.setProperty('--tx', (Math.random() - 0. 5) * 300 + 'px');
+                confetti.style.setProperty('--ty', Math.random() * 400 + 150 + 'px');
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function resetData() {
+            if (confirm('Вы уверены?  Это удалит все данные! ')) {
+                localStorage.removeItem('gameData');
+                location.reload();
+            }
+        }
+
+        // Закрытие модалей по клику на фон
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Инициализация
+        loadData();
+        initTelegram();
+        updateUI();
+        initNFTGrid();
+
+        // Event listeners для модалей
+        document.getElementById('historyModal').addEventListener('click', () => {
+            updateHistory();
+        });
+    </script>
+</body>
+</html>
