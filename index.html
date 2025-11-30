@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NFT Cases</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #000; color: #fff; }
+        .page { display: none; min-height: 100vh; }
+        .active { display: block; }
+        
+        .header { background: #1a1a1a; padding: 15px; display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #333; }
+        .balance-item { margin-left: 15px; display: flex; align-items: center; font-size: 14px; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333; }
+        .nav-btn { color: #fff; background: none; border: none; font-size: 14px; cursor: pointer; }
+        
+        .bonus-box { background: #1a1a1a; margin: 20px; padding: 30px; border-radius: 15px; border: 1px solid #333; text-align: center; }
+        .btn { background: #007bff; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 16px; cursor: pointer; width: 100%; }
+        
+        .profile-header { background: #1a1a1a; padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { color: #fff; background: none; border: none; font-size: 16px; cursor: pointer; }
+        .online { color: #0f0; font-size: 12px; }
+        .profile-tabs { display: flex; background: #1a1a1a; padding: 10px; border-bottom: 1px solid #333; }
+        .tab { flex: 1; text-align: center; padding: 10px; color: #fff; background: none; border: none; cursor: pointer; }
+        .tab.active { border-bottom: 2px solid #007bff; }
+        
+        .stars-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
+        .star-option { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; }
+        .star-option:hover { border-color: #007bff; }
+        
+        .keyboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 20px; background: #1a1a1a; }
+        .key { background: #333; border: none; color: #fff; padding: 15px; border-radius: 5px; cursor: pointer; }
+        .key:hover { background: #444; }
+        
+        .profile-content { padding: 20px; }
+        .balance-card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px; }
+        .balance-amount { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .topup-btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="bonusPage" class="page active">
+        <div class="bonus-box">
+            <h2>🎁 ВНЕЗАПНЫЙ БОНУС!</h2>
+            <p>💎 Игрок,вы получаете 500 алмазов на баланс бесплатно</p>
+            <button class="btn" onclick="showMainMenu()">Забрать бонус</button>
+        </div>
+    </div>
+
+    <div id="mainPage" class="page">
+        <div class="header">
+            <div class="balance-item">
+                <button style="background:#007bff; color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:16px;" onclick="showDepositPage()">+</button>
+            </div>
+            <div class="balance-item">⭐️ <span id="starsBalance">0.05</span></div>
+            <div class="balance-item">💎 <span id="diamondsBalance">500</span></div>
+        </div>
+
+        <div style="padding: 60px 20px 80px 20px; text-align: center;">
+            <h2>Главное меню</h2>
+        </div>
+
+        <div class="nav">
+            <button class="nav-btn" onclick="showSection('slots')">1. Слоты</button>
+            <button class="nav-btn" onclick="showSection('free')">2. Бесплатно</button>
+            <button class="nav-btn" onclick="showProfilePage()">3. Профиль</button>
+        </div>
+    </div>
+
+    <div id="profilePage" class="page">
+        <div class="profile-header">
+            <div class="online">436 online</div>
+            <button class="close-btn" onclick="closeProfile()">Закрыть</button>
+        </div>
+        
+        <div class="profile-tabs">
+            <button class="tab active">Пополнение</button>
+            <button class="tab">Stars</button>
+            <button class="tab">TON</button>
+            <button class="tab">Gifts</button>
+        </div>
+        
+        <div class="profile-content">
+            <h2 style="margin-bottom: 15px;">azotherm</h2>
+            
+            <div class="balance-card">
+                <div>Баланс Stars</div>
+                <div class="balance-amount">0.05</div>
+                <button class="topup-btn" onclick="showStarsPayment()">Пополнить</button>
+            </div>
+            
+            <div class="balance-card">
+                <div>Реферальная программа</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="starsPaymentPage" class="page">
+        <div class="profile-header">
+            <div>Stars</div>
+            <button class="close-btn" onclick="closeStarsPayment()">Закрыть</button>
+        </div>
+        
+        <div class="stars-grid">
+            <div class="star-option" onclick="selectStars(200)">+200 ★</div>
+            <div class="star-option" onclick="selectStars(500)">+500 ★</div>
+            <div class="star-option" onclick="selectStars(1000)">+1000 ★</div>
+            <div class="star-option" onclick="selectStars('MIN')">MIN</div>
+        </div>
+        
+        <div style="padding: 20px; text-align: center;">
+            <button class="btn" onclick="showKeyboard()">Оплатить</button>
+        </div>
+    </div>
+
+    <div id="keyboardPage" class="page">
+        <div class="profile-header">
+            <div>Ввод суммы</div>
+            <button class="close-btn" onclick="closeKeyboard()">Закрыть</button>
+        </div>
+        
+        <div class="keyboard">
+            <button class="key" onclick="pressKey('1')">1</button>
+            <button class="key" onclick="pressKey('2')">2 А Б В Г</button>
+            <button class="key" onclick="pressKey('3')">3 Д Е Ж З</button>
+            <button class="key" onclick="pressKey('4')">4 И Й К Л</button>
+            <button class="key" onclick="pressKey('5')">5 М Н О П</button>
+            <button class="key" onclick="pressKey('6')">6 Р С Т У</button>
+            <button class="key" onclick="pressKey('7')">7 Ф Х Ц Ч</button>
+            <button class="key" onclick="pressKey('8')">8 Ш Ш Ь Ы</button>
+            <button class="key" onclick="pressKey('9')">9 Ь Э Ю Я</button>
+            <button class="key" onclick="pressKey(',')">,</button>
+            <button class="key" onclick="pressKey('0')">0</button>
+            <button class="key" onclick="pressKey('✅')" style="background: #007bff;">✅</button>
+        </div>
+    </div>
+
+    <script>
+        let stars = 0.05;
+        let diamonds = 500;
+        let selectedStars = 0;
+
+        function showMainMenu() {
+            hideAllPages();
+            document.getElementById('mainPage').classList.add('active');
+            updateBalances();
+        }
+
+        function showProfilePage() {
+            hideAllPages();
+            document.getElementById('profilePage').classList.add('active');
+        }
+
+        function showStarsPayment() {
+            hideAllPages();
+            document.getElementById('starsPaymentPage').classList.add('active');
+        }
+
+        function showKeyboard() {
+            hideAllPages();
+            document.getElementById('keyboardPage').classList.add('active');
+        }
+
+        function closeProfile() {
+            hideAllPages();
+            document.getElementById('mainPage').classList.add('active');
+        }
+
+        function closeStarsPayment() {
+            hideAllPages();
+            document.getElementById('profilePage').classList.add('active');
+        }
+
+        function closeKeyboard() {
+            hideAllPages();
+            document.getElementById('starsPaymentPage').classList.add('active');
+        }
+
+        function showDepositPage() {
+            showProfilePage();
+        }
+
+        function showSection(section) {
+            console.log('Opening section:', section);
+        }
+
+        function selectStars(amount) {
+            selectedStars = amount;
+        }
+
+        function pressKey(key) {
+            console.log('Pressed:', key);
+        }
+
+        function hideAllPages() {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+        }
+
+        function updateBalances() {
+            document.getElementById('starsBalance').textContent = stars;
+            document.getElementById('diamondsBalance').textContent = diamonds;
+        }
+
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+    </script>
+</body>
+</html>
