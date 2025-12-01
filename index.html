@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Mini App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .top-balance {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+        }
+        
+        .balance-item {
+            background: #007AFF;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .add-button {
+            background: #007AFF;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 25px;
+            padding: 5px;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin-top: 20px;
+        }
+        
+        .slot {
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slot:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: 10%;
+            height: 80%;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+        
+        .slot-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slot-reel {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .slot img {
+            width: 100%;
+            height: 110px;
+            object-fit: contain;
+            padding: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .spin-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .spin-count {
+            background: #007AFF;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .spin-mode-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .spin-mode-button {
+            background: #007AFF;
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        .spin-mode-button.active {
+            background: #0056CC;
+            box-shadow: 0 0 15px rgba(0, 122, 255, 0.5);
+        }
+        
+        .spin-button {
+            background: #007AFF;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px 40px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            letter-spacing: 0.5px;
+        }
+        
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 122, 255, 0.5);
+            background: #0088FF;
+        }
+        
+        .spin-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .spin-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .win-message {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 20px 0;
+            height: 40px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .win {
+            color: #4CD964;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        .lose {
+            color: #FF3B30;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(76, 217, 100, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(76, 217, 100, 0.8), 0 0 30px rgba(76, 217, 100, 0.6);
+            }
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 18px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        
+        .nav-button:not(:last-child)::after {
+            content: '|';
+            position: absolute;
+            right: -12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .nav-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        .profile-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 30px 25px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+        
+        .profile-header {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-balance-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.5px;
+        }
+        
+        .profile-balance {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .profile-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .deposit-button, .withdraw-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+        
+        .deposit-button {
+            background: linear-gradient(45deg, #007AFF, #0056CC);
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+        }
+        
+        .withdraw-button {
+            background: linear-gradient(45deg, #4CD964, #2E8B57);
+            color: white;
+            box-shadow: 0 6px 20px rgba(76, 217, 100, 0.4);
+        }
+        
+        .deposit-button:hover, .withdraw-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #2d2d2d;
+            padding: 30px 25px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            max-width: 320px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #fff;
+        }
+        
+        .amount-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        
+        .amount-input:focus {
+            border-color: #007AFF;
+        }
+        
+        .pay-button {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .pay-button:hover {
+            background: #333;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .bonus-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 25px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+        
+        .bonus-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        
+        .bonus-streak {
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .bonus-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+        }
+        
+        .bonus-timer {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CD964;
+            margin-bottom: 12px;
+        }
+        
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .key {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .key:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .username-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        
+        .success-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CD964;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-balance" id="topBalance">
+        <div class="add-button">+</div>
+        <div class="balance-item">0 ⭐️</div>
+        <div class="balance-item">0 💎</div>
+    </div>
+
+    <div class="container">
+        <div class="screen active" id="slotsScreen">
+            <div class="slots-container">
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel1"></div>
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel2"></div>
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner">
+                        <div class="slot-reel" id="reel3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="win-message" id="winMessage"></div>
+            
+            <div class="spin-info">
+                <div class="spin-count" id="spinCount">0</div>
+            </div>
+            
+            <div class="spin-mode-buttons">
+                <button class="spin-mode-button active" data-mode="diamond">Алмазный крут</button>
+                <button class="spin-mode-button" data-mode="1x">1X ШАНС</button>
+            </div>
+            
+            <button class="spin-button" id="spinButton">Крутить • 100💎</button>
+        </div>
+        
+        <div class="screen" id="freeScreen">
+            <div class="bonus-container">
+                <div class="bonus-title">Заходи каждый день - получай алмазы на счет!</div>
+                <div class="bonus-streak" id="bonusStreak">Ваша серия: 1 день</div>
+                <button class="bonus-button" id="bonusButton">Забрать бонус • 100</button>
+                <div class="bonus-timer" id="bonusTimer" style="display: none;">23:59:59</div>
+            </div>
+        </div>
+        
+        <div class="screen" id="profileScreen">
+            <div class="profile-container">
+                <div class="profile-header">Профиль</div>
+                <div class="profile-avatar" id="userAvatar">
+                    <img src="" alt="Avatar" id="avatarImage" style="display: none;">
+                    <span id="avatarPlaceholder">👤</span>
+                </div>
+                <div class="profile-name" id="userName">azotherm</div>
+                <div class="profile-balance-label">Баланс Stars</div>
+                <div class="profile-balance" id="userBalance">0</div>
+                <div class="profile-buttons">
+                    <button class="deposit-button" id="depositButton">Пополнить</button>
+                    <button class="withdraw-button" id="withdrawButton">Вывести</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-buttons">
+        <button class="nav-button active" data-screen="slotsScreen">Слоты</button>
+        <button class="nav-button" data-screen="freeScreen">Бесплатно</button>
+        <button class="nav-button" data-screen="profileScreen">Профиль</button>
+    </div>
+    
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <div class="close-modal" id="closeDepositModal">❌</div>
+            <div class="modal-header">Пополнение</div>
+            <input type="text" class="amount-input" id="depositAmount" value="0" readonly>
+            <div class="keyboard" id="depositKeyboard">
+                <button class="key" data-key="1">1</button>
+                <button class="key" data-key="2">2</button>
+                <button class="key" data-key="3">3</button>
+                <button class="key" data-key="4">4</button>
+                <button class="key" data-key="5">5</button>
+                <button class="key" data-key="6">6</button>
+                <button class="key" data-key="7">7</button>
+                <button class="key" data-key="8">8</button>
+                <button class="key" data-key="9">9</button>
+                <button class="key" data-key=".">,</button>
+                <button class="key" data-key="0">0</button>
+                <button class="key" data-key="back">⌫</button>
+            </div>
+            <button class="pay-button" id="payButton">Оплатить</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <div class="close-modal" id="closeWithdrawModal">❌</div>
+            <div class="modal-header">Вывод Stars</div>
+            <input type="text" class="username-input" id="withdrawUsername" placeholder="@username">
+            <input type="text" class="amount-input" id="withdrawAmount" value="10" readonly>
+            <div class="keyboard" id="withdrawKeyboard">
+                <button class="key" data-key="1">1</button>
+                <button class="key" data-key="2">2</button>
+                <button class="key" data-key="3">3</button>
+                <button class="key" data-key="4">4</button>
+                <button class="key" data-key="5">5</button>
+                <button class="key" data-key="6">6</button>
+                <button class="key" data-key="7">7</button>
+                <button class="key" data-key="8">8</button>
+                <button class="key" data-key="9">9</button>
+                <button class="key" data-key=".">,</button>
+                <button class="key" data-key="0">0</button>
+                <button class="key" data-key="back">⌫</button>
+            </div>
+            <button class="pay-button" id="withdrawButtonModal">Вывести</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="success-message">
+                ✅<br>
+                Ваша заявка на вывод одобрена,<br>
+                звезды придут на баланс вашего аккаунта в течении 5 минут!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gifs = [
+            '093.gif', '108.gif', '034.gif', '030.gif', '060.gif',
+            '120.gif', '130.gif', '124.gif', '138.gif', '033.gif'
+        ];
+
+        const diamondMultipliers = {
+            '093.gif': 100, '108.gif': 70, '034.gif': 50, '030.gif': 36, '060.gif': 26,
+            '120.gif': 18, '130.gif': 14, '124.gif': 10, '138.gif': 7, '033.gif': 3
+        };
+
+        const diamondProbabilities = {
+            '093.gif': 0.1, '108.gif': 0.3, '034.gif': 0.6, '030.gif': 1.2, '060.gif': 1.8,
+            '120.gif': 2.2, '130.gif': 2.7, '124.gif': 3.0, '138.gif': 3.6, '033.gif': 5.0
+        };
+
+        const oneXMultipliers = {
+            '093.gif': 10, '108.gif': 7, '034.gif': 5, '030.gif': 3.6, '060.gif': 2.6,
+            '120.gif': 1.8, '130.gif': 1.4, '124.gif': 1.0, '138.gif': 0.7, '033.gif': 0.3
+        };
+        
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const spinButton = document.getElementById('spinButton');
+        const winMessage = document.getElementById('winMessage');
+        const navButtons = document.querySelectorAll('.nav-button');
+        const screens = document.querySelectorAll('.screen');
+        const depositButton = document.getElementById('depositButton');
+        const withdrawButton = document.getElementById('withdrawButton');
+        const depositModal = document.getElementById('depositModal');
+        const withdrawModal = document.getElementById('withdrawModal');
+        const successModal = document.getElementById('successModal');
+        const closeDepositModal = document.getElementById('closeDepositModal');
+        const closeWithdrawModal = document.getElementById('closeWithdrawModal');
+        const addButtons = document.querySelectorAll('.add-button');
+        const bonusButton = document.getElementById('bonusButton');
+        const bonusTimer = document.getElementById('bonusTimer');
+        const bonusStreak = document.getElementById('bonusStreak');
+        const topBalance = document.getElementById('topBalance');
+        const spinModeButtons = document.querySelectorAll('.spin-mode-button');
+        const depositAmount = document.getElementById('depositAmount');
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const withdrawUsername = document.getElementById('withdrawUsername');
+        const payButton = document.getElementById('payButton');
+        const withdrawButtonModal = document.getElementById('withdrawButtonModal');
+        const depositKeyboard = document.getElementById('depositKeyboard');
+        const withdrawKeyboard = document.getElementById('withdrawKeyboard');
+        const spinCount = document.getElementById('spinCount');
+        
+        let currentDay = 1;
+        let canClaimBonus = true;
+        let timerInterval;
+        let currentMode = 'diamond';
+        let userStars = 0;
+        let userDiamonds = 0;
+        
+        const bonusAmounts = [100, 200, 300, 400, 500];
+        
+        function initializeReels() {
+            reel1.innerHTML = '';
+            reel2.innerHTML = '';
+            reel3.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const shuffledGifs1 = [...gifs].sort(() => Math.random() - 0.5);
+                const shuffledGifs2 = [...gifs].sort(() => Math.random() - 0.5);
+                const shuffledGifs3 = [...gifs].sort(() => Math.random() - 0.5);
+                
+                shuffledGifs1.forEach(gif => {
+                    const img1 = document.createElement('img');
+                    img1.src = `gifs/${gif}`;
+                    img1.alt = `Slot ${gif}`;
+                    reel1.appendChild(img1);
+                });
+                
+                shuffledGifs2.forEach(gif => {
+                    const img2 = document.createElement('img');
+                    img2.src = `gifs/${gif}`;
+                    img2.alt = `Slot ${gif}`;
+                    reel2.appendChild(img2);
+                });
+                
+                shuffledGifs3.forEach(gif => {
+                    const img3 = document.createElement('img');
+                    img3.src = `gifs/${gif}`;
+                    img3.alt = `Slot ${gif}`;
+                    reel3.appendChild(img3);
+                });
+            }
+        }
+        
+        function resetReels() {
+            reel1.style.transition = 'none';
+            reel2.style.transition = 'none';
+            reel3.style.transition = 'none';
+            reel1.style.transform = 'translateY(0px)';
+            reel2.style.transform = 'translateY(0px)';
+            reel3.style.transform = 'translateY(0px)';
+        }
+        
+        function getRandomGif() {
+            return gifs[Math.floor(Math.random() * gifs.length)];
+        }
+        
+        function determineSpinResult() {
+            const random = Math.random() * 100;
+            let finalResult;
+            
+            if (currentMode === 'diamond') {
+                if (random < 8) {
+                    let cumulative = 0;
+                    const probabilities = diamondProbabilities;
+                    
+                    for (const gif of gifs) {
+                        cumulative += probabilities[gif];
+                        if (random <= cumulative) {
+                            finalResult = [gif, gif, gif];
+                            break;
+                        }
+                    }
+                } else {
+                    finalResult = [getRandomGif(), getRandomGif(), getRandomGif()];
+                }
+            } else {
+                finalResult = [getRandomGif(), getRandomGif(), getRandomGif()];
+                const winChance = Math.random() * 100;
+                
+                if (winChance < 10) {
+                    const randomGif = getRandomGif();
+                    finalResult = [randomGif, randomGif, randomGif];
+                }
+            }
+            
+            return finalResult;
+        }
+        
+        function spinSlots() {
+            const cost = getSpinCost();
+            const currency = getSpinCurrency();
+            
+            if (!hasEnoughBalance(cost, currency)) {
+                alert(`Недостаточно ${currency === '💎' ? 'алмазов' : 'звезд'}!`);
+                return;
+            }
+            
+            deductBalance(cost, currency);
+            
+            winMessage.textContent = '';
+            winMessage.className = 'win-message';
+            
+            spinButton.disabled = true;
+            spinButton.textContent = 'Вращение...';
+            
+            resetReels();
+            
+            setTimeout(() => {
+                const result = determineSpinResult();
+                const win = calculateWin(result);
+                
+                const positions = result.map(gif => {
+                    const index = gifs.indexOf(gif);
+                    return -(index * 110);
+                });
+                
+                const extraSpin = -110 * gifs.length * 6;
+                
+                setTimeout(() => {
+                    reel1.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    reel2.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    reel3.style.transition = 'transform 2s cubic-bezier(0.1, 0.8, 0.2, 0.9)';
+                    
+                    reel1.style.transform = `translateY(${positions[0] + extraSpin}px)`;
+                    reel2.style.transform = `translateY(${positions[1] + extraSpin}px)`;
+                    reel3.style.transform = `translateY(${positions[2] + extraSpin}px)`;
+                }, 100);
+                
+                setTimeout(() => {
+                    reel1.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    reel2.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    reel3.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.4, 1)';
+                    
+                    reel1.style.transform = `translateY(${positions[0]}px)`;
+                    reel2.style.transform = `translateY(${positions[1]}px)`;
+                    reel3.style.transform = `translateY(${positions[2]}px)`;
+                }, 2100);
+                
+                setTimeout(() => {
+                    checkWin(win, result);
+                    
+                    spinButton.disabled = false;
+                    updateSpinButtonText();
+                    updateSpinCount();
+                }, 2700);
+            }, 50);
+        }
+        
+        function calculateWin(result) {
+            const [gif1, gif2, gif3] = result;
+            
+            if (gif1 === gif2 && gif2 === gif3) {
+                let multipliers;
+                switch(currentMode) {
+                    case 'diamond': multipliers = diamondMultipliers; break;
+                    case '1x': multipliers = oneXMultipliers; break;
+                    default: multipliers = diamondMultipliers;
+                }
+                return Math.round(multipliers[gif1] * getSpinCost());
+            }
+            return 0;
+        }
+        
+        function getSpinCost() {
+            switch(currentMode) {
+                case 'diamond': return 100;
+                case '1x': return 1;
+                default: return 100;
+            }
+        }
+        
+        function getSpinCurrency() {
+            return currentMode === 'diamond' ? '💎' : '⭐️';
+        }
+        
+        function hasEnoughBalance(cost, currency) {
+            if (currency === '💎') {
+                return userDiamonds >= cost;
+            } else {
+                return userStars >= cost;
+            }
+        }
+        
+        function deductBalance(cost, currency) {
+            if (currency === '💎') {
+                userDiamonds -= cost;
+            } else {
+                userStars -= cost;
+            }
+            updateBalanceDisplay();
+        }
+        
+        function addBalance(amount, currency) {
+            if (currency === '💎') {
+                userDiamonds += amount;
+            } else {
+                userStars += amount;
+            }
+            updateBalanceDisplay();
+        }
+        
+        function updateBalanceDisplay() {
+            document.querySelectorAll('.balance-item')[0].textContent = `${userStars} ⭐️`;
+            document.querySelectorAll('.balance-item')[1].textContent = `${userDiamonds} 💎`;
+            document.getElementById('userBalance').textContent = userStars;
+            updateSpinCount();
+        }
+        
+        function updateSpinCount() {
+            const cost = getSpinCost();
+            const currency = getSpinCurrency();
+            if (currency === '⭐️') {
+                const availableSpins = Math.floor(userStars / cost);
+                spinCount.textContent = availableSpins;
+            } else {
+                spinCount.textContent = '0';
+            }
+        }
+        
+        function checkWin(totalWin, result) {
+            const [gif1, gif2, gif3] = result;
+            const currency = getSpinCurrency();
+            
+            if (totalWin > 0) {
+                addBalance(totalWin, currency);
+                winMessage.textContent = `Победа! +${totalWin}${currency}`;
+                winMessage.classList.add('win');
+            } else {
+                winMessage.textContent = 'Попробуйте еще раз!';
+                winMessage.classList.add('lose');
+            }
+        }
+        
+        function updateSpinButtonText() {
+            const cost = getSpinCost();
+            const currency = getSpinCurrency();
+            spinButton.textContent = `Крутить • ${cost}${currency}`;
+        }
+        
+        function setSpinMode(mode) {
+            currentMode = mode;
+            
+            spinModeButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            
+            updateSpinButtonText();
+            updateSpinCount();
+        }
+        
+        function startTimer() {
+            let timeLeft = 23 * 60 * 60 + 59 * 60 + 59;
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    canClaimBonus = true;
+                    bonusButton.style.display = 'block';
+                    bonusTimer.style.display = 'none';
+                    bonusButton.textContent = `Забрать бонус • ${bonusAmounts[Math.min(currentDay - 1, 4)]}`;
+                    return;
+                }
+                
+                timeLeft--;
+                
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+                
+                bonusTimer.textContent = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+        
+        function claimBonus() {
+            if (!canClaimBonus) return;
+            
+            const bonusAmount = bonusAmounts[Math.min(currentDay - 1, 4)];
+            userDiamonds += bonusAmount;
+            updateBalanceDisplay();
+            
+            canClaimBonus = false;
+            currentDay++;
+            bonusButton.style.display = 'none';
+            bonusTimer.style.display = 'block';
+            bonusStreak.textContent = `Ваша серия: ${currentDay} дней`;
+            startTimer();
+        }
+        
+        function showScreen(screenId) {
+            screens.forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            navButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-screen') === screenId) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        function redirectToBot() {
+            window.location.href = 'https://t.me/Casinowminiappbot?start=';
+        }
+        
+        function initializeKeyboard(inputElement, keyboardElement, minAmount = 0) {
+            const keys = keyboardElement.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.addEventListener('click', () => {
+                    const keyValue = key.getAttribute('data-key');
+                    let currentValue = inputElement.value.replace(',', '.');
+                    
+                    if (keyValue === 'back') {
+                        currentValue = currentValue.slice(0, -1);
+                        if (currentValue === '') currentValue = '0';
+                    } else if (keyValue === '.' || keyValue === ',') {
+                        if (!currentValue.includes('.')) {
+                            currentValue += '.';
+                        }
+                    } else {
+                        if (currentValue === '0') {
+                            currentValue = keyValue;
+                        } else {
+                            if (currentValue.includes('.')) {
+                                const decimalPart = currentValue.split('.')[1];
+                                if (decimalPart.length < 2) {
+                                    currentValue += keyValue;
+                                }
+                            } else {
+                                if (parseFloat(currentValue + keyValue) <= 10000) {
+                                    currentValue += keyValue;
+                                }
+                            }
+                        }
+                    }
+                    
+                    let finalValue = parseFloat(currentValue);
+                    if (isNaN(finalValue)) finalValue = minAmount;
+                    if (finalValue < minAmount) finalValue = minAmount;
+                    
+                    inputElement.value = finalValue.toFixed(finalValue % 1 === 0 ? 0 : 2).replace('.', ',');
+                });
+            });
+        }
+        
+        spinButton.addEventListener('click', spinSlots);
+        
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                showScreen(btn.getAttribute('data-screen'));
+            });
+        });
+        
+        spinModeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setSpinMode(btn.getAttribute('data-mode'));
+            });
+        });
+        
+        depositButton.addEventListener('click', redirectToBot);
+        withdrawButton.addEventListener('click', redirectToBot);
+        
+        addButtons.forEach(btn => {
+            btn.addEventListener('click', redirectToBot);
+        });
+        
+        bonusButton.addEventListener('click', claimBonus);
+        
+        document.querySelectorAll('.spin-mode-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.spin-mode-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        const savedStars = localStorage.getItem('casinoStars');
+        const savedDiamonds = localStorage.getItem('casinoDiamonds');
+        const savedBonusDay = localStorage.getItem('casinoBonusDay');
+        const savedBonusTime = localStorage.getItem('casinoBonusTime');
+        
+        if (savedStars) userStars = parseInt(savedStars);
+        if (savedDiamonds) userDiamonds = parseInt(savedDiamonds);
+        if (savedBonusDay) currentDay = parseInt(savedBonusDay);
+        
+        if (savedBonusTime) {
+            const timeDiff = Date.now() - parseInt(savedBonusTime);
+            const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+            
+            if (hoursDiff >= 24) {
+                canClaimBonus = true;
+                bonusButton.style.display = 'block';
+                bonusTimer.style.display = 'none';
+                bonusStreak.textContent = `Ваша серия: ${currentDay} дней`;
+            } else {
+                canClaimBonus = false;
+                bonusButton.style.display = 'none';
+                bonusTimer.style.display = 'block';
+                const remainingSeconds = 24 * 60 * 60 - Math.floor(timeDiff / 1000);
+                startTimerWithSeconds(remainingSeconds);
+            }
+        }
+        
+        function startTimerWithSeconds(seconds) {
+            let timeLeft = seconds;
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    canClaimBonus = true;
+                    bonusButton.style.display = 'block';
+                    bonusTimer.style.display = 'none';
+                    bonusButton.textContent = `Забрать бонус • ${bonusAmounts[Math.min(currentDay - 1, 4)]}`;
+                    return;
+                }
+                
+                timeLeft--;
+                
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+                
+                bonusTimer.textContent = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+        
+        function saveGameState() {
+            localStorage.setItem('casinoStars', userStars.toString());
+            localStorage.setItem('casinoDiamonds', userDiamonds.toString());
+            
+            if (!canClaimBonus) {
+                localStorage.setItem('casinoBonusDay', currentDay.toString());
+                localStorage.setItem('casinoBonusTime', Date.now().toString());
+            } else {
+                localStorage.removeItem('casinoBonusTime');
+            }
+        }
+        
+        setInterval(saveGameState, 10000);
+        
+        initializeReels();
+        setSpinMode('diamond');
+        updateBalanceDisplay();
+        bonusStreak.textContent = `Ваша серия: ${currentDay} дней`;
+        
+        if (canClaimBonus) {
+            bonusButton.textContent = `Забрать бонус • ${bonusAmounts[Math.min(currentDay - 1, 4)]}`;
+        }
+    </script>
+</body>
+</html>
