@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Рулетка NFT</title>
+  <style>
+    body {
+      background: #6a0dad;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    #roulette-container {
+      width: 1900px; /* Увеличиваем длину рулетки */
+      margin: 50px auto;
+      overflow: hidden;
+      border: none; /* Убираем белый квадрат */
+      background: transparent;
+      height: 300px; /* Увеличиваем высоту контейнера рулетки */
+      position: relative;
+    }
+    #roulette {
+      display: flex;
+      align-items: center;
+      will-change: transform;
+    }
+    .item {
+      min-width: 300px; /* Увеличиваем ширину элементов */
+      margin: 0 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .item img {
+      width: 250px; /* Увеличиваем размер изображений */
+      height: 250px;
+      object-fit: cover;
+      border-radius: 15px;
+      background: transparent;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 40px;
+      font-size: 20px;
+      background: gold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10;
+    }
+    #overlay img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 5px solid gold;
+      margin-bottom: 20px;
+      background: transparent;
+    }
+    #overlay h2 {
+      font-size: 2em;
+      color: gold;
+    }
+    #timer {
+      font-size: 1.5em;
+      color: gold;
+      display: none; /* Таймер скрыт по умолчанию */
+    }
+    /* Стиль для красной указки */
+    #pointer {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid red; /* Красная указка */
+      transform: translateX(-50%);
+      z-index: 15; /* Указка сверху рулетки */
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Рулетка NFT 🎁</h1>
+
+<div id="roulette-container">
+  <div id="roulette">
+    <div class="item"><img src="https://media.tproger.ru/uploads/2025/02/a090bfe6-b31e-4c73-a991-9d4b01dff329.jpg"></div>
+    <div class="item"><img src="https://i.getgems.io/NzU_WpEetL8daGnbSRVDEegF_IpTiIdHh61PVmfFQj8/rs:fill:500:500:1/g:ce/czM6Ly9nZXRnZW1zLXMzL25mdC1jb250ZW50LWNhY2hlL2ltYWdlcy9FUUJHLWc2YWhrQVVHV3BlZldieC1EXzlzUThvV2J2eTZwdXVxNzhVMmM0TlVERlMvODZlNGFkMDUzODNhNTc2Zl8xOTRhOTZjMTdmNQ"></div>
+    <div class="item"><img src="https://media.tproger.ru/uploads/2025/02/a090bfe6-b31e-4c73-a991-9d4b01dff329.jpg"></div>
+    <div class="item"><img src="https://i.getgems.io/NzU_WpEetL8daGnbSRVDEegF_IpTiIdHh61PVmfFQj8/rs:fill:500:500:1/g:ce/czM6Ly9nZXRnZW1zLXMzL25mdC1jb250ZW50LWNhY2hlL2ltYWdlcy9FUUJHLWc2YWhrQVVHV3BlZldieC1EXzlzUThvV2J2eTZwdXVxNzhVMmM0TlVERlMvODZlNGFkMDUzODNhNTc2Zl8xOTRhOTZjMTdmNQ"></div>
+    <div class="item"><img src="https://media.tproger.ru/uploads/2025/02/a090bfe6-b31e-4c73-a991-9d4b01dff329.jpg"></div>
+    <div class="item"><img src="https://i.getgems.io/NzU_WpEetL8daGnbSRVDEegF_IpTiIdHh61PVmfFQj8/rs:fill:500:500:1/g:ce/czM6Ly9nZXRnZW1zLXMzL25mdC1jb250ZW50LWNhY2hlL2ltYWdlcy9FUUJHLWc2YWhrQVVHV3BlZldieC1EXzlzUThvV2J2eTZwdXVxNzhVMmM0TlVERlMvODZlNGFkMDUzODNhNTc2Zl8xOTRhOTZjMTdmNQ"></div>
+  </div>
+  <!-- Указка в центре -->
+  <div id="pointer"></div>
+</div>
+
+<button id="spinButton" onclick="startRoulette()">Крутить!</button>
+<p id="timer">Следующий запуск через: 10 секунд</p>
+
+<div id="overlay">
+  <img id="prize-img" src="" alt="Приз">
+  <h2>Вы выиграли!</h2>
+  <button onclick="closeOverlay()">Закрыть</button>
+</div>
+
+<script>
+  let roulette = document.getElementById('roulette');
+  let overlay = document.getElementById('overlay');
+  let prizeImg = document.getElementById('prize-img');
+  let spinButton = document.getElementById('spinButton');
+  let timerElement = document.getElementById('timer');
+  let pointer = document.getElementById('pointer');
+  let position = 0;
+  let speed = 30; // начальная скорость
+  let spinning = false;
+  let animationFrame;
+  let timer;
+
+  function startRoulette() {
+    if (spinning) return;
+    spinning = true;
+    position = 0;
+    speed = 30;
+
+    // Убираем таймер, чтобы он не мешал при запуске
+    clearInterval(timer);
+    timerElement.style.display = 'none'; // Скрыть таймер сразу после начала игры
+
+    function spin() {
+      position -= speed;
+      if (position <= -roulette.scrollWidth / 2) {
+        position = 0;
+      }
+      roulette.style.transform = `translateX(${position}px)`;
+      animationFrame = requestAnimationFrame(spin);
+    }
+
+    spin();
+
+    setTimeout(() => {
+      gradualStop();
+    }, 3000);
+  }
+
+  function gradualStop() {
+    cancelAnimationFrame(animationFrame);
+    let deceleration = speed / 100; // делаем маленькое замедление
+    function slowSpin() {
+      position -= speed;
+      if (position <= -roulette.scrollWidth / 2) {
+        position = 0;
+      }
+      roulette.style.transform = `translateX(${position}px)`;
+
+      speed -= deceleration;
+      if (speed > 0.5) {
+        requestAnimationFrame(slowSpin);
+      } else {
+        spinning = false;
+        showPrize();
+      }
+    }
+    slowSpin();
+  }
+
+  function showPrize() {
+    let items = document.querySelectorAll('.item img');
+    let center = window.innerWidth / 2;
+    let minDiff = Infinity;
+    let winnerSrc = '';
+
+    items.forEach(img => {
+      let rect = img.getBoundingClientRect();
+      let imgCenter = rect.left + rect.width / 2;
+      let diff = Math.abs(center - imgCenter);
+      if (diff < minDiff) {
+        minDiff = diff;
+        winnerSrc = img.src;
+      }
+    });
+
+    prizeImg.src = winnerSrc;
+    overlay.style.display = 'flex';
+
+    // Таймер для обратного отсчета на 10 секунд
+    let secondsLeft = 10;
+    timerElement.style.display = 'block'; // Показываем таймер
+    timer = setInterval(function() {
+      timerElement.textContent = `Следующий запуск через: ${secondsLeft} секунд`;
+      secondsLeft--;
+      if (secondsLeft < 0) {
+        clearInterval(timer);
+        timerElement.textContent = `Готово к следующему запуску!`;
+        spinButton.disabled = false;
+      }
+    }, 1000);
+
+    spinButton.disabled = true; // Отключаем кнопку
+  }
+
+  function closeOverlay() {
+    overlay.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
