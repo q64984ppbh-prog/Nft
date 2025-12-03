@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Рулетка NFT</title>
+  <style>
+    body {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #ffffff;
+      margin-bottom: 30px;
+    }
+    #roulette-container {
+      width: 1900px;
+      margin: 50px auto;
+      overflow: hidden;
+      background: transparent;
+      height: 320px;
+      position: relative;
+      border-radius: 10px;
+    }
+    #roulette {
+      display: flex;
+      align-items: center;
+      will-change: transform;
+      padding: 10px 0;
+    }
+    .item {
+      min-width: 280px;
+      margin: 0 15px;
+      text-align: center;
+      flex-shrink: 0;
+      background: #3a3a3a;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .item img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 3px solid #555;
+    }
+    .item-info {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #b0b0b0;
+    }
+    .multiplier {
+      color: gold;
+      font-weight: bold;
+    }
+    .chance {
+      color: #8bc34a;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 15px 50px;
+      font-size: 20px;
+      background: linear-gradient(45deg, #555, #777);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: linear-gradient(45deg, #666, #888);
+      transform: scale(1.05);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(10px);
+      background: rgba(30, 30, 30, 0.85);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 100;
+    }
+    #overlay img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 5px solid gold;
+      margin-bottom: 20px;
+      background: #3a3a3a;
+    }
+    #overlay h2 {
+      font-size: 2.5em;
+      color: gold;
+      margin: 10px 0;
+    }
+    #overlay .prize-info {
+      font-size: 1.2em;
+      color: #ccc;
+      margin-bottom: 30px;
+    }
+    #timer {
+      font-size: 1.3em;
+      color: gold;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      display: none;
+    }
+    #pointer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      z-index: 50;
+      pointer-events: none;
+    }
+    #pointer:before {
+      content: "▼";
+      font-size: 40px;
+      color: red;
+      text-shadow: 0 0 10px rgba(255,0,0,0.7);
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #pointer:after {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 320px;
+      background: linear-gradient(to bottom, red, transparent);
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎰 NFT Рулетка 🎰</h1>
+
+<div id="roulette-container">
+  <div id="roulette"></div>
+  <div id="pointer"></div>
+</div>
+
+<button id="spinButton" onclick="startRoulette()">Крутить!</button>
+<p id="timer">Следующий запуск через: 10 секунд</p>
+
+<div id="overlay">
+  <img id="prize-img" src="" alt="Приз">
+  <h2>🎉 Поздравляем! 🎉</h2>
+  <div id="prize-info" class="prize-info"></div>
+  <button onclick="closeOverlay()">Продолжить</button>
+</div>
+
+<script>
+  const items = [
+    {image: "093.gif", multiplier: "x250", chance: "0.3%"},
+    {image: "108.gif", multiplier: "x180", chance: "0.6%"},
+    {image: "034.gif", multiplier: "x250", chance: "0.3%"},
+    {image: "030.gif", multiplier: "x180", chance: "0.6%"},
+    {image: "060.gif", multiplier: "x130", chance: "0.9%"},
+    {image: "120.gif", multiplier: "x90", chance: "1.1%"},
+    {image: "130.gif", multiplier: "x70", chance: "1.35%"},
+    {image: "124.gif", multiplier: "x50", chance: "1.5%"},
+    {image: "138.gif", multiplier: "x35", chance: "1.8%"},
+    {image: "033.gif", multiplier: "x15", chance: "2.5%"}
+  ];
+
+  const rouletteContainer = document.getElementById('roulette');
+  const overlay = document.getElementById('overlay');
+  const prizeImg = document.getElementById('prize-img');
+  const prizeInfo = document.getElementById('prize-info');
+  const spinButton = document.getElementById('spinButton');
+  const timerElement = document.getElementById('timer');
+  let position = 0;
+  let speed = 30;
+  let spinning = false;
+  let animationFrame;
+  let timer;
+
+  function initRoulette() {
+    items.forEach(item => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'item';
+      itemDiv.innerHTML = `
+        <img src="${item.image}" alt="NFT">
+        <div class="item-info">
+          <div class="multiplier">${item.multiplier}</div>
+          <div class="chance">Шанс: ${item.chance}</div>
+        </div>
+      `;
+      rouletteContainer.appendChild(itemDiv);
+    });
+    
+    const duplicate = rouletteContainer.cloneNode(true);
+    rouletteContainer.appendChild(duplicate);
+  }
+
+  function startRoulette() {
+    if (spinning) return;
+    spinning = true;
+    position = 0;
+    speed = 30;
+    clearInterval(timer);
+    timerElement.style.display = 'none';
+    spinButton.disabled = true;
+
+    function spin() {
+      position -= speed;
+      if (position <= -rouletteContainer.scrollWidth / 2) {
+        position = 0;
+      }
+      rouletteContainer.style.transform = `translateX(${position}px)`;
+      animationFrame = requestAnimationFrame(spin);
+    }
+
+    spin();
+
+    setTimeout(() => {
+      gradualStop();
+    }, 3000);
+  }
+
+  function gradualStop() {
+    cancelAnimationFrame(animationFrame);
+    let deceleration = speed / 100;
+    function slowSpin() {
+      position -= speed;
+      if (position <= -rouletteContainer.scrollWidth / 2) {
+        position = 0;
+      }
+      rouletteContainer.style.transform = `translateX(${position}px)`;
+      speed -= deceleration;
+      if (speed > 0.5) {
+        requestAnimationFrame(slowSpin);
+      } else {
+        spinning = false;
+        showPrize();
+      }
+    }
+    slowSpin();
+  }
+
+  function showPrize() {
+    const allItems = document.querySelectorAll('.item');
+    const center = window.innerWidth / 2;
+    let minDiff = Infinity;
+    let winnerIndex = -1;
+
+    allItems.forEach((item, index) => {
+      const rect = item.getBoundingClientRect();
+      const itemCenter = rect.left + rect.width / 2;
+      const diff = Math.abs(center - itemCenter);
+      if (diff < minDiff && index < items.length) {
+        minDiff = diff;
+        winnerIndex = index % items.length;
+      }
+    });
+
+    if (winnerIndex >= 0) {
+      const winner = items[winnerIndex];
+      prizeImg.src = winner.image;
+      prizeInfo.innerHTML = `
+        Множитель: <span class="multiplier">${winner.multiplier}</span><br>
+        Шанс выпадения: <span class="chance">${winner.chance}</span>
+      `;
+      overlay.style.display = 'flex';
+    }
+
+    let secondsLeft = 10;
+    timerElement.style.display = 'block';
+    timerElement.textContent = `Следующий запуск через: ${secondsLeft} секунд`;
+    
+    timer = setInterval(function() {
+      secondsLeft--;
+      timerElement.textContent = `Следующий запуск через: ${secondsLeft} секунд`;
+      if (secondsLeft <= 0) {
+        clearInterval(timer);
+        timerElement.textContent = `Готово к следующему запуску!`;
+        spinButton.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function closeOverlay() {
+    overlay.style.display = 'none';
+  }
+
+  window.onload = initRoulette;
+</script>
+
+</body>
+</html>
