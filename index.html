@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎮 Crash</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: #0f0f17;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .gif-section {
+            height: 55vh;
+            background: #1a1a25;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rocket-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 180px;
+            z-index: 10;
+        }
+
+        .rocket-gif {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .rocket-gif.active {
+            display: block;
+        }
+
+        .current-game-display {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .current-game-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+            transition: color 0.3s;
+        }
+
+        .current-game-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+        }
+
+        .history-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .history-item {
+            background: #1a1a25;
+            border-radius: 8px;
+            padding: 10px;
+            min-width: 50px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-current {
+            background: #40e0d0;
+            border: none;
+        }
+
+        .history-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .history-current .history-value {
+            color: #0f0f17;
+        }
+
+        .separator {
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .control-section {
+            padding: 20px;
+            padding-top: 10px;
+            background: #0f0f17;
+        }
+
+        .bet-button {
+            width: 100%;
+            padding: 16px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f0f17;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+
+        .bet-button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .bet-button:active {
+            transform: translateY(0);
+        }
+
+        .bet-button.cash-out {
+            background: #40e0d0;
+            color: #0f0f17;
+        }
+
+        .bet-button.cash-out:hover {
+            background: #50f0e0;
+        }
+
+        .bet-button:disabled {
+            background: #3a3a4a;
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes rocketShake {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-3deg); }
+            50% { transform: translate(-50%, -50%) rotate(3deg); }
+            75% { transform: translate(-50%, -50%) rotate(-2deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        .rocket-shake {
+            animation: rocketShake 0.3s ease-in-out infinite;
+        }
+
+        @keyframes explosionFlash {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(255, 107, 157, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        .explosion-flash {
+            animation: explosionFlash 0.5s ease-out;
+        }
+
+        @keyframes vibration {
+            0% { transform: translate(-50%, -50%) translateX(0); }
+            25% { transform: translate(-50%, -50%) translateX(-2px); }
+            50% { transform: translate(-50%, -50%) translateX(0); }
+            75% { transform: translate(-50%, -50%) translateX(2px); }
+            100% { transform: translate(-50%, -50%) translateX(0); }
+        }
+
+        .vibration {
+            animation: vibration 0.1s linear infinite;
+        }
+
+        .multiplier-green {
+            color: #40e0d0 !important;
+        }
+
+        .multiplier-yellow {
+            color: #ffd166 !important;
+        }
+
+        .multiplier-orange {
+            color: #ff9a66 !important;
+        }
+
+        .multiplier-red {
+            color: #ff6b9d !important;
+        }
+
+        .crash-now {
+            color: #ff4757 !important;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gif-section" id="gifSection">
+        <div class="current-game-display">
+            <div class="current-game-value" id="currentMultiplier">1.00x</div>
+            <div class="current-game-label">ТЕКУЩАЯ ИГРА</div>
+        </div>
+        <div class="rocket-container" id="rocketContainer">
+            <img src="gifs/polet.gif" class="rocket-gif" id="rocketGif">
+            <img src="gifs/bomba.gif" class="rocket-gif" id="explosionGif">
+        </div>
+    </div>
+
+    <div class="history-display">
+        <div class="history-item history-current">
+            <div class="history-value" id="currentMultiplier2">1.00</div>
+        </div>
+        <div class="separator">|</div>
+        <div class="history-item">
+            <div class="history-value" id="history1">1.00</div>
+        </div>
+        <div class="separator">|</div>
+        <div class="history-item">
+            <div class="history-value" id="history2">2.54</div>
+        </div>
+        <div class="separator">|</div>
+        <div class="history-item">
+            <div class="history-value" id="history3">3.60</div>
+        </div>
+        <div class="separator">|</div>
+        <div class="history-item">
+            <div class="history-value" id="history4">1.00</div>
+        </div>
+    </div>
+
+    <div class="control-section">
+        <button id="placeBetBtn" class="bet-button">Сделать ставку</button>
+        <button id="cashOutBtn" class="bet-button cash-out hidden">Забрать</button>
+    </div>
+
+    <script>
+        let gameActive = false;
+        let multiplier = 1.00;
+        let balance = 5000;
+        let currentBet = null;
+        let gameLoopId = null;
+        let launchTimerId = null;
+        let launchTimer = 10.0;
+        let history = [1.00, 2.54, 3.60, 1.00];
+        let vibrationSupported = 'vibrate' in navigator;
+        const MAX_MULTIPLIER = 24.61;
+        let multiplierSpeed = 0.03;
+        let lastUpdateTime = 0;
+
+        function initGame() {
+            updateHistoryDisplay();
+            startLaunchTimer();
+            setupGIFs();
+        }
+
+        function setupGIFs() {
+            const rocketGif = document.getElementById('rocketGif');
+            const explosionGif = document.getElementById('explosionGif');
+            
+            rocketGif.onerror = () => {
+                rocketGif.style.display = 'none';
+                showEmoji('🚀');
+            };
+            
+            explosionGif.onerror = () => {
+                explosionGif.style.display = 'none';
+                showEmoji('💥');
+            };
+        }
+
+        function showEmoji(emoji) {
+            const container = document.getElementById('rocketContainer');
+            const emojiEl = document.createElement('div');
+            emojiEl.style.fontSize = '70px';
+            emojiEl.style.textAlign = 'center';
+            emojiEl.textContent = emoji;
+            container.appendChild(emojiEl);
+        }
+
+        function startLaunchTimer() {
+            if (launchTimerId) clearInterval(launchTimerId);
+            
+            launchTimer = 10.0;
+            launchTimerId = setInterval(() => {
+                launchTimer -= 0.1;
+                
+                if (launchTimer <= 0) {
+                    clearInterval(launchTimerId);
+                    if (!gameActive) {
+                        startAutoGame();
+                    }
+                }
+            }, 100);
+        }
+
+        function startAutoGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            multiplier = 1.00;
+            multiplierSpeed = 0.03;
+            lastUpdateTime = Date.now();
+            
+            document.getElementById('rocketGif').style.display = 'block';
+            document.getElementById('rocketGif').classList.add('active');
+            document.getElementById('explosionGif').style.display = 'none';
+            document.getElementById('explosionGif').classList.remove('active');
+            document.getElementById('rocketContainer').classList.remove('rocket-shake', 'vibration');
+            
+            updateMultiplier();
+            updateMultiplierColor();
+            startGameLoop();
+        }
+
+        function startGameLoop() {
+            if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            
+            const gameLoop = () => {
+                if (!gameActive) return;
+                
+                const currentTime = Date.now();
+                const deltaTime = (currentTime - lastUpdateTime) / 1000;
+                
+                if (deltaTime >= 1) {
+                    multiplier += multiplierSpeed;
+                    lastUpdateTime = currentTime;
+                    
+                    if (multiplier >= 3) {
+                        multiplierSpeed = 0.07;
+                    } else if (multiplier >= 2) {
+                        multiplierSpeed = 0.05;
+                    }
+                    
+                    if (multiplier >= MAX_MULTIPLIER) {
+                        multiplier = MAX_MULTIPLIER;
+                        crashGame();
+                        return;
+                    }
+                    
+                    updateMultiplier();
+                    updateMultiplierColor();
+                    
+                    if (multiplier > 3) {
+                        document.getElementById('rocketContainer').classList.add('rocket-shake');
+                    }
+                }
+                
+                gameLoopId = requestAnimationFrame(gameLoop);
+            };
+            
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function updateMultiplier() {
+            const multiplierValue = multiplier.toFixed(2);
+            document.getElementById('currentMultiplier').textContent = multiplierValue + 'x';
+            document.getElementById('currentMultiplier2').textContent = multiplierValue;
+        }
+
+        function updateMultiplierColor() {
+            const multiplierEl = document.getElementById('currentMultiplier');
+            const historyEl = document.getElementById('currentMultiplier2');
+            
+            multiplierEl.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red', 'crash-now');
+            historyEl.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red', 'crash-now');
+            
+            if (multiplier >= MAX_MULTIPLIER - 0.5) {
+                multiplierEl.classList.add('crash-now');
+                historyEl.classList.add('crash-now');
+            } else if (multiplier >= 15) {
+                multiplierEl.classList.add('multiplier-red');
+                historyEl.classList.add('multiplier-red');
+            } else if (multiplier >= 8) {
+                multiplierEl.classList.add('multiplier-orange');
+                historyEl.classList.add('multiplier-orange');
+            } else if (multiplier >= 3) {
+                multiplierEl.classList.add('multiplier-yellow');
+                historyEl.classList.add('multiplier-yellow');
+            } else {
+                multiplierEl.classList.add('multiplier-green');
+                historyEl.classList.add('multiplier-green');
+            }
+        }
+
+        function updateHistoryDisplay() {
+            document.getElementById('history1').textContent = history[0].toFixed(2);
+            document.getElementById('history2').textContent = history[1].toFixed(2);
+            document.getElementById('history3').textContent = history[2].toFixed(2);
+            document.getElementById('history4').textContent = history[3].toFixed(2);
+            
+            history.forEach((value, index) => {
+                const el = document.getElementById(`history${index + 1}`);
+                el.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red');
+                
+                if (value >= 15) {
+                    el.classList.add('multiplier-red');
+                } else if (value >= 8) {
+                    el.classList.add('multiplier-orange');
+                } else if (value >= 3) {
+                    el.classList.add('multiplier-yellow');
+                } else {
+                    el.classList.add('multiplier-green');
+                }
+            });
+        }
+
+        function placeBet() {
+            if (currentBet || gameActive) return;
+            
+            const betAmount = 100;
+            
+            if (betAmount > balance) {
+                alert('Недостаточно средств!');
+                return;
+            }
+            
+            currentBet = {
+                amount: betAmount,
+                cashedOut: false
+            };
+            
+            balance -= betAmount;
+            
+            document.getElementById('placeBetBtn').classList.add('hidden');
+            document.getElementById('cashOutBtn').classList.remove('hidden');
+            
+            if (!gameActive) {
+                startAutoGame();
+            }
+        }
+
+        function cashOut() {
+            if (!currentBet || currentBet.cashedOut || !gameActive) return;
+            
+            currentBet.cashedOut = true;
+            const winAmount = currentBet.amount * multiplier;
+            balance += winAmount;
+            
+            document.getElementById('placeBetBtn').classList.remove('hidden');
+            document.getElementById('cashOutBtn').classList.add('hidden');
+            
+            addToHistory(multiplier);
+            currentBet = null;
+        }
+
+        function crashGame() {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            
+            document.getElementById('rocketGif').style.display = 'none';
+            document.getElementById('rocketGif').classList.remove('active');
+            document.getElementById('explosionGif').style.display = 'block';
+            document.getElementById('explosionGif').classList.add('active');
+            
+            document.getElementById('gifSection').classList.add('explosion-flash');
+            document.getElementById('rocketContainer').classList.add('vibration');
+            
+            if (vibrationSupported) {
+                navigator.vibrate([300, 150, 300]);
+            }
+            
+            if (currentBet && !currentBet.cashedOut) {
+                currentBet = null;
+                document.getElementById('placeBetBtn').classList.remove('hidden');
+                document.getElementById('cashOutBtn').classList.add('hidden');
+            }
+            
+            addToHistory(multiplier);
+            
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+            
+            setTimeout(() => {
+                document.getElementById('gifSection').classList.remove('explosion-flash');
+                document.getElementById('rocketContainer').classList.remove('vibration');
+                resetGame();
+                startLaunchTimer();
+            }, 3000);
+        }
+
+        function addToHistory(newMultiplier) {
+            history.unshift(newMultiplier);
+            if (history.length > 4) {
+                history.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        function resetGame() {
+            gameActive = false;
+            multiplier = 1.00;
+            multiplierSpeed = 0.03;
+            
+            document.getElementById('rocketGif').style.display = 'none';
+            document.getElementById('rocketGif').classList.remove('active');
+            document.getElementById('explosionGif').style.display = 'none';
+            document.getElementById('explosionGif').classList.remove('active');
+            
+            document.getElementById('rocketContainer').classList.remove('rocket-shake', 'vibration');
+            
+            updateMultiplier();
+            updateMultiplierColor();
+            
+            if (currentBet) {
+                document.getElementById('placeBetBtn').classList.remove('hidden');
+                document.getElementById('cashOutBtn').classList.add('hidden');
+                currentBet = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initGame);
+        
+        document.getElementById('placeBetBtn').addEventListener('click', placeBet);
+        document.getElementById('cashOutBtn').addEventListener('click', cashOut);
+        
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.setHeaderColor('#0f0f17');
+            Telegram.WebApp.setBackgroundColor('#0f0f17');
+        }
+    </script>
+</body>
+</html>
