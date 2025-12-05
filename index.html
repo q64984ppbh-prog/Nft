@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Краш</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 70px;
+        }
+
+        /* Шапка */
+        .header {
+            background: white;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eaeaea;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            padding: 15px;
+        }
+
+        /* Карточка ставки */
+        .bet-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .bet-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #000;
+        }
+
+        /* Список ставок */
+        .bets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bet-item {
+            display: flex;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .bet-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .bet-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .bet-avatar.garant {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .bet-avatar.vaslander {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .bet-avatar.ozodbek {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .bet-info {
+            flex: 1;
+        }
+
+        .bet-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .bet-details {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .bet-coefficient {
+            color: #34c759;
+            font-weight: 500;
+        }
+
+        .bet-amount {
+            color: #007aff;
+            font-weight: 500;
+        }
+
+        .bet-profit {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Иконки в тексте */
+        .icon {
+            display: inline-block;
+            margin-right: 6px;
+            font-size: 16px;
+        }
+
+        /* Навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: #007aff;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .nav-text {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Статус гаранта */
+        .garant-badge {
+            display: inline-block;
+            background: #34c759;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Визуальный разделитель */
+        .divider {
+            height: 1px;
+            background: #eaeaea;
+            margin: 15px 0;
+        }
+
+        /* Подзаголовки */
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            padding-left: 5px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <div class="header">
+        <h1>Сделать ставку</h1>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+        <div class="bet-card">
+            <h2>图</h2>
+            <div class="bets-list">
+                <div class="bet-item">
+                    <div class="bet-avatar garant">
+                        V
+                    </div>
+                    <div class="bet-info">
+                        <div class="bet-name">
+                            V | Garant <span class="garant-badge">0%...</span>
+                        </div>
+                        <div class="bet-details">
+                            <span class="icon">💬</span> 
+                            <span class="bet-amount">0.50</span> 
+                            <span class="bet-coefficient">x1.12</span>
+                        </div>
+                    </div>
+                    <div class="bet-profit">
+                        <span class="icon">💭</span> 0.56
+                    </div>
+                </div>
+
+                <div class="bet-item">
+                    <div class="bet-avatar vaslander">
+                        V
+                    </div>
+                    <div class="bet-info">
+                        <div class="bet-name">Vaslander52</div>
+                        <div class="bet-details">
+                            <span class="icon">💬</span> 
+                            <span class="bet-amount">0.20</span> 
+                            <span class="bet-coefficient">x1.12</span>
+                        </div>
+                    </div>
+                    <div class="bet-profit">
+                        <span class="icon">💭</span> 0.22
+                    </div>
+                </div>
+
+                <div class="bet-item">
+                    <div class="bet-avatar ozodbek">
+                        О
+                    </div>
+                    <div class="bet-info">
+                        <div class="bet-name">Озодбек</div>
+                        <div class="bet-details">
+                            <span class="icon">💬</span> 
+                            <span class="bet-amount">0.13</span> 
+                            <span class="bet-coefficient">x1.12</span>
+                        </div>
+                    </div>
+                    <div class="bet-profit">
+                        <span class="icon">💭</span> 0.14
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижняя навигация -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item">
+            <div class="nav-icon">📦</div>
+            <div class="nav-text">Кейсы</div>
+        </a>
+        <a href="#" class="nav-item active">
+            <div class="nav-icon">📈</div>
+            <div class="nav-text">Краш</div>
+        </a>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-text">Профиль</div>
+        </a>
+    </div>
+
+    <script>
+        // Простая логика для активного состояния навигации
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
