@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket - Игра</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(25, 25, 40, 0.9);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(10, 10, 15, 0.9);
+            border-bottom: 1px solid #333;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-close {
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ff3366;
+        }
+
+        .crash-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .rocket {
+            font-size: 60px;
+            margin: 20px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .multiplier {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4cd964;
+            margin: 10px 0;
+        }
+
+        .status {
+            font-size: 18px;
+            color: #ffcc00;
+            margin-bottom: 15px;
+        }
+
+        .bet-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .bet-option {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .bet-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ff3366;
+        }
+
+        .bet-option.active {
+            background: rgba(255, 51, 102, 0.3);
+            border-color: #ff3366;
+        }
+
+        .bet-option-value {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .bet-option-chance {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .players-table th {
+            text-align: left;
+            padding: 10px;
+            background: rgba(255, 51, 102, 0.2);
+            color: #ff3366;
+        }
+
+        .players-table td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .balance-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 51, 102, 0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4cd964;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #ff3366, #ff9933);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 51, 102, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+        }
+
+        .nav-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 51, 102, 0.3);
+            color: #ff3366;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .referral-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .referral-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-size: 14px;
+        }
+
+        .stats-table {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .stats-table td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .inventory-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .upgrade-info {
+            background: rgba(255, 51, 102, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .upgrade-step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .step-number {
+            background: #ff3366;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .flying {
+            animation: flyUp 2s forwards;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        @keyframes crash {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .crash {
+            animation: crash 1s forwards;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">Rocket</div>
+            <div class="header-close" onclick="closeModal()">✕</div>
+        </div>
+
+        <div class="content">
+            <!-- Crash Game -->
+            <div id="crash-section">
+                <div class="crash-section">
+                    <div class="status">Ожидание следующего раунда</div>
+                    <div class="rocket" id="rocket">🚀</div>
+                    <div class="multiplier" id="multiplier">1.00x</div>
+                    <div class="status" id="game-status">Ожидание ставок</div>
+                </div>
+
+                <div class="bet-options">
+                    <div class="bet-option" onclick="selectBet(1.79)">
+                        <div class="bet-option-value">1.79x</div>
+                        <div class="bet-option-chance">1.12x</div>
+                    </div>
+                    <div class="bet-option" onclick="selectBet(1.12)">
+                        <div class="bet-option-value">1.12x</div>
+                        <div class="bet-option-chance">73.70x</div>
+                    </div>
+                    <div class="bet-option" onclick="selectBet(73.7)">
+                        <div class="bet-option-value">73.70x</div>
+                        <div class="bet-option-chance">1.40x</div>
+                    </div>
+                    <div class="bet-option" onclick="selectBet(1.4)">
+                        <div class="bet-option-value">1.40x</div>
+                        <div class="bet-option-chance">5.4</div>
+                    </div>
+                    <div class="bet-option" onclick="selectBet(5.4)">
+                        <div class="bet-option-value">5.4x</div>
+                        <div class="bet-option-chance">Высокий</div>
+                    </div>
+                </div>
+
+                <table class="players-table">
+                    <thead>
+                        <tr>
+                            <th>Игрок</th>
+                            <th>Ставка</th>
+                            <th>Множитель</th>
+                        </tr>
+                    </thead>
+                    <tbody id="players-list">
+                        <tr>
+                            <td>Columns</td>
+                            <td>0.01</td>
+                            <td>x1.00</td>
+                        </tr>
+                        <tr>
+                            <td>XIRO</td>
+                            <td>0.01</td>
+                            <td>x1.00</td>
+                        </tr>
+                        <tr>
+                            <td>Xzz</td>
+                            <td>0.02</td>
+                            <td>x1.00</td>
+                        </tr>
+                        <tr>
+                            <td>croskid</td>
+                            <td>0.05</td>
+                            <td>x1.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="balance-section">
+                    <div>
+                        <div style="color: #aaa;">Баланс</div>
+                        <div class="balance-amount" id="balance">0.00</div>
+                    </div>
+                    <button class="btn" onclick="placeBet()">Сделать ставку</button>
+                </div>
+            </div>
+
+            <!-- Profile -->
+            <div id="profile-section" class="hidden">
+                <div class="section-title">trumtory</div>
+                <div class="balance-section">
+                    <div>
+                        <div style="color: #aaa;">Мой баланс</div>
+                        <div class="balance-amount">0.00</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                    <button class="btn">Пополнить</button>
+                    <button class="btn btn-secondary">Вывести</button>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div class="section-title">Инвентарь</div>
+                        <button class="btn btn-secondary">Продать все</button>
+                    </div>
+                    <div class="inventory-section">
+                        Инвентарь пуст
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partners -->
+            <div id="partners-section" class="hidden">
+                <div class="section-title">Приглашайте партнеров по ссылке, получайте 10% с депозитов</div>
+                
+                <div style="text-align: center; margin: 20px 0; padding: 20px; background: rgba(255,51,102,0.1); border-radius: 15px;">
+                    <div style="font-size: 14px; color: #aaa;">Всего пользователей Rocket</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #ff3366;">292921</div>
+                </div>
+
+                <div class="referral-section">
+                    <div style="margin-bottom: 15px; font-weight: bold;">Пригласить друга</div>
+                    
+                    <div style="color: #aaa; margin-bottom: 10px;">Скопировать реферальную ссылку</div>
+                    <div class="referral-link" id="referral-link">
+                        https://t.me/RocketxAppBot?start=105084022
+                    </div>
+                    <button class="btn" onclick="copyReferralLink()">Копировать</button>
+                </div>
+
+                <div style="margin: 30px 0;">
+                    <div class="section-title">Статистика</div>
+                    <table class="stats-table">
+                        <tr>
+                            <td><strong>Партнеров</strong></td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Заработано</strong></td>
+                            <td>ТОП</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="upgrade-info">
+                    <div class="section-title">Правила приглашения партнеров</div>
+                    <p style="margin-top: 10px; color: #aaa;">
+                        Пригласите партнера по своей ссылке, далее после пополнения им депозита вы получите % на свой баланс
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upgrades -->
+            <div id="upgrades-section" class="hidden">
+                <div class="section-title">Улучшить подарок</div>
+                
+                <div class="upgrade-info">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div class="section-title">Как работают апгрейды</div>
+                        <div style="color: #ff3366; cursor: pointer;" onclick="toggleUpgradeDetails()">Скрыть детали</div>
+                    </div>
+                    
+                    <div id="upgrade-details">
+                        <div class="upgrade-step">
+                            <div class="step-number">1</div>
+                            <div>
+                                <div style="font-weight: bold;">Выберите подарок</div>
+                                <div style="color: #aaa; font-size: 14px;">Выберите подарок из инвентаря, который хотите улучшить</div>
+                            </div>
+                        </div>
+                        
+                        <div class="upgrade-step">
+                            <div class="step-number">2</div>
+                            <div>
+                                <div style="font-weight: bold;">Выберите подарок для улучшения</div>
+                                <div style="color: #aaa; font-size: 14px;">Выберите более дорогой подарок, на который хотите его обменять</div>
+                            </div>
+                        </div>
+                        
+                        <div class="upgrade-step">
+                            <div class="step-number">3</div>
+                            <div>
+                                <div style="font-weight: bold;">Крутите колесо</div>
+                                <div style="color: #aaa; font-size: 14px;">Шанс успеха зависит от разницы в стоимости между подарками</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0; padding: 15px; background: rgba(76, 217, 100, 0.1); border-radius: 10px;">
+                            <div style="color: #4cd964; font-weight: bold;">✓ Успех</div>
+                            <div style="color: #aaa; font-size: 14px;">Вы получаете улучшенный подарок</div>
+                        </div>
+                        
+                        <div style="padding: 15px; background: rgba(255, 51, 102, 0.1); border-radius: 10px;">
+                            <div style="color: #ff3366; font-weight: bold;">✗ Неудача</div>
+                            <div style="color: #aaa; font-size: 14px;">Вы теряете свой подарок</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <div style="color: #aaa; margin-bottom: 10px;">Выберите подарок</div>
+                    <div style="color: #ff3366; font-size: 18px; margin-bottom: 20px;">Инвентарь пуст</div>
+                    <button class="btn" onclick="showModal('Для улучшения нужен подарок в инвентаре')">Улучшить подарок</button>
+                </div>
+            </div>
+
+            <!-- Cases -->
+            <div id="cases-section" class="hidden">
+                <div class="section-title">Кейсы</div>
+                <div class="inventory-section">
+                    <div style="font-size: 60px; margin: 20px 0;">🎁</div>
+                    <div style="color: #aaa; margin-bottom: 20px;">Откройте кейсы, чтобы получить подарки</div>
+                    <button class="btn" onclick="showModal('Пополните баланс для открытия кейсов')">Открыть кейс (1.00)</button>
+                </div>
+            </div>
+
+            <div class="nav">
+                <div class="nav-item active" onclick="showSection('crash')">Краш</div>
+                <div class="nav-item" onclick="showSection('cases')">Кейсы</div>
+                <div class="nav-item" onclick="showSection('upgrades')">Апгрейды</div>
+                <div class="nav-item" onclick="showSection('partners')">Партнеры</div>
+                <div class="nav-item" onclick="showSection('profile')">Профиль</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="text-align: right;">
+                <span style="cursor: pointer; font-size: 20px;" onclick="closeModal()">✕</span>
+            </div>
+            <div id="modal-content" style="text-align: center; padding: 20px;">
+                Сообщение
+            </div>
+            <button class="btn" style="width: 100%;" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'crash';
+        let balance = 0.00;
+        let currentBet = 0;
+        let selectedMultiplier = 1.79;
+        let gameRunning = false;
+        let currentMultiplier = 1.00;
+        let crashPoint = 2.0;
+        let players = [
+            { name: "Columns", bet: 0.01, multiplier: 1.00 },
+            { name: "XIRO", bet: 0.01, multiplier: 1.00 },
+            { name: "Xzz", bet: 0.02, multiplier: 1.00 },
+            { name: "croskid", bet: 0.05, multiplier: 1.00 }
+        ];
+
+        function showSection(section) {
+            document.getElementById('crash-section').classList.add('hidden');
+            document.getElementById('profile-section').classList.add('hidden');
+            document.getElementById('partners-section').classList.add('hidden');
+            document.getElementById('upgrades-section').classList.add('hidden');
+            document.getElementById('cases-section').classList.add('hidden');
+            
+            document.getElementById(`${section}-section`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            currentSection = section;
+        }
+
+        function selectBet(multiplier) {
+            selectedMultiplier = multiplier;
+            document.querySelectorAll('.bet-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function placeBet() {
+            if (gameRunning) {
+                showModal('Игра уже идет! Дождитесь следующего раунда');
+                return;
+            }
+            
+            if (balance <= 0) {
+                showModal('Пополните баланс для ставки!');
+                return;
+            }
+            
+            currentBet = 0.01;
+            balance -= currentBet;
+            updateBalance();
+            
+            const playerName = prompt('Введите ваше имя для ставки:', 'Игрок');
+            if (playerName) {
+                players.push({ 
+                    name: playerName, 
+                    bet: currentBet, 
+                    multiplier: selectedMultiplier 
+                });
+                updatePlayersList();
+            }
+            
+            showModal(`Ставка ${currentBet} на множитель x${selectedMultiplier} принята!`);
+            
+            if (players.length >= 2) {
+                setTimeout(startGame, 2000);
+            }
+        }
+
+        function startGame() {
+            gameRunning = true;
+            document.getElementById('game-status').textContent = 'Игра идет...';
+            document.getElementById('rocket').classList.add('flying');
+            
+            crashPoint = Math.random() * 10 + 1.5;
+            currentMultiplier = 1.00;
+            
+            const gameInterval = setInterval(() => {
+                currentMultiplier += 0.01;
+                document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+                
+                if (currentMultiplier >= crashPoint) {
+                    clearInterval(gameInterval);
+                    endGame();
+                }
+            }, 100);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            document.getElementById('game-status').textContent = 'Улетел!';
+            document.getElementById('rocket').classList.remove('flying');
+            document.getElementById('rocket').classList.add('crash');
+            
+            setTimeout(() => {
+                document.getElementById('rocket').classList.remove('crash');
+                document.getElementById('multiplier').textContent = '1.00x';
+                document.getElementById('game-status').textContent = 'Ожидание ставок';
+                
+                players.forEach((player, index) => {
+                    if (player.multiplier <= currentMultiplier) {
+                        const winAmount = player.bet * player.multiplier;
+                        if (player.name.includes('Игрок')) {
+                            balance += winAmount;
+                            updateBalance();
+                        }
+                    }
+                });
+                
+                players = players.slice(0, 4);
+                updatePlayersList();
+                
+                setTimeout(() => {
+                    if (Math.random() > 0.5) {
+                        const botNames = ['Columns', 'XIRO', 'Xzz', 'croskid', 'NewPlayer'];
+                        const randomBot = botNames[Math.floor(Math.random() * botNames.length)];
+                        const randomBet = [0.01, 0.02, 0.05, 0.1][Math.floor(Math.random() * 4)];
+                        const randomMultiplier = [1.79, 1.12, 73.7, 1.4, 5.4][Math.floor(Math.random() * 5)];
+                        
+                        players.push({
+                            name: randomBot,
+                            bet: randomBet,
+                            multiplier: randomMultiplier
+                        });
+                        updatePlayersList();
+                    }
+                }, 1000);
+            }, 1000);
+        }
+
+        function updatePlayersList() {
+            const tbody = document.getElementById('players-list');
+            tbody.innerHTML = '';
+            
+            players.forEach(player => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>${player.bet.toFixed(2)}</td>
+                    <td>x${player.multiplier.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance.toFixed(2);
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referral-link').textContent;
+            navigator.clipboard.writeText(link)
+                .then(() => showModal('Ссылка скопирована в буфер!'))
+                .catch(err => showModal('Ошибка копирования'));
+        }
+
+        function toggleUpgradeDetails() {
+            const details = document.getElementById('upgrade-details');
+            const toggle = document.querySelector('#upgrades-section .upgrade-info div div:nth-child(2)');
+            
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                toggle.textContent = 'Скрыть детали';
+            } else {
+                details.classList.add('hidden');
+                toggle.textContent = 'Показать детали';
+            }
+        }
+
+        function showModal(message) {
+            document.getElementById('modal-content').textContent = message;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Инициализация
+        updateBalance();
+        updatePlayersList();
+
+        // Добавляем демо-ботов
+        setInterval(() => {
+            if (!gameRunning && Math.random() > 0.7 && players.length < 8) {
+                const botNames = ['Bot1', 'Bot2', 'Bot3', 'Bot4'];
+                const randomBot = botNames[Math.floor(Math.random() * botNames.length)];
+                const randomBet = [0.01, 0.02, 0.03, 0.04, 0.05][Math.floor(Math.random() * 5)];
+                const randomMultiplier = [1.79, 1.12, 2.0, 1.4, 3.0][Math.floor(Math.random() * 5)];
+                
+                if (!players.some(p => p.name === randomBot)) {
+                    players.push({
+                        name: randomBot,
+                        bet: randomBet,
+                        multiplier: randomMultiplier
+                    });
+                    updatePlayersList();
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
